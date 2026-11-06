@@ -37,7 +37,7 @@ Lenovo</p>"""
     private const val KEY_QR_BG = "qr_bg_path"
     private const val KEY_QR_LINK = "qr_link_"
     private const val KEY_QR_LABEL = "qr_label_"
-    const val DEFAULT_QR_TITLE = "SSG Floor Day"
+    const val DEFAULT_QR_TITLE = "FloorDay"
 
     fun qrTitle(c: Context): String =
         c.getSharedPreferences(FILE, 0).getString(KEY_QR_TITLE, DEFAULT_QR_TITLE) ?: DEFAULT_QR_TITLE
