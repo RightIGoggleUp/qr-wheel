@@ -200,7 +200,7 @@ class MainActivity : Activity() {
             val lab = findViewById<TextView>(qrLabels[i])
             val label = Prefs.qrSlotLabel(this, i)
             lab.maxLines = 2
-            lab.ellipsize = android.text.TextUtils.TruncateAt.END
+            lab.ellipsize = null // labels are never shortened (Patrick 10:39 AM)
             lab.text = label
             lab.visibility = if (label.isBlank()) View.INVISIBLE else View.VISIBLE
             cell.setOnClickListener { showSlotDialog(i) }

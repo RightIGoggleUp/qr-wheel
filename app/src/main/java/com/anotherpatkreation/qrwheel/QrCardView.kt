@@ -1,7 +1,6 @@
 package com.anotherpatkreation.qrwheel
 
 import android.content.Context
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -12,9 +11,10 @@ import com.google.zxing.qrcode.encoder.Encoder
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 
 /**
- * Renders the branded signup QR card: white rounded card, full-width Lenovo
- * red box on top, Round-style QR below (rounded modules, Lenovo-red finder
- * rings), error-correction level H. Regenerated live whenever the URL changes.
+ * Renders the custom QR card: white rounded card (all four corners), custom
+ * Round-style QR (rounded dark modules, red finder rings), error-correction
+ * level H. Card is as close to square as the space allows so the code fills
+ * it. No brand banner (Patrick 10:47 AM). Regenerated live on URL change.
  */
 class QrCardView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
@@ -23,7 +23,6 @@ class QrCardView @JvmOverloads constructor(
     private val ink = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#111418") }
     private val red = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#E2231A") }
     private val white = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
-    private val logo = BitmapFactory.decodeResource(resources, R.drawable.lenovo_logo)
     private val tmp = RectF()
 
     private var matrix: Array<BooleanArray>? = null
@@ -47,38 +46,24 @@ class QrCardView @JvmOverloads constructor(
         val n = modules
         val grid = n + 8 // 4-module quiet zone each side
 
-        // Card geometry: width-limited, logo band above the code.
+        // Card geometry: largest square that fits, centered. No banner - the
+        // QR spans nearly the whole card (quiet zone preserved via grid = n+8).
         val availW = width.toFloat()
         val availH = height.toFloat()
-        // Slight shrink + upward bias so the card never hugs or clips the tab bar.
-        var cardW = availW * 0.97f
-        var cardH = cardW * (1f + 1f / 3f) + cardW * 0.18f // side + band + gaps (approx)
-        if (cardH > availH * 0.98f) {
-            cardW *= (availH * 0.98f) / cardH
-            cardH = availH * 0.98f
-        }
-        val left = (availW - cardW) / 2f
-        val top = (availH - cardH) / 2f * 0.72f
+        val cardS = minOf(availW, availH) * 0.98f
+        val left = (availW - cardS) / 2f
+        val top = (availH - cardS) / 2f
 
-        val padF = cardW * 0.06f
-        val sideF = cardW - 2 * padF
-        val bandHF = sideF * logo.height / logo.width
-        val gapF = sideF * 0.06f
-        val m = sideF / grid
+        val padF = cardS * 0.055f
+        val m = (cardS - 2 * padF) / grid
 
-        // White card
-        tmp.set(left, top, left + cardW, top + cardH)
-        canvas.drawRoundRect(tmp, cardW * 0.06f, cardW * 0.06f, white)
+        // White card, all four corners rounded (visible radius)
+        tmp.set(left, top, left + cardS, top + cardS)
+        canvas.drawRoundRect(tmp, cardS * 0.085f, cardS * 0.085f, white)
 
-        // Lenovo red box, full code width, on top
-        val bandLeft = left + padF
-        val bandTop = top + padF
-        tmp.set(bandLeft, bandTop, bandLeft + sideF, bandTop + bandHF)
-        canvas.drawBitmap(logo, null, tmp, white)
-
-        // QR code below
+        // QR code fills the card
         val qrLeft = left + padF
-        val qrTop = bandTop + bandHF + gapF
+        val qrTop = top + padF
         fun inFinder(r: Int, c: Int) =
             (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7)
 
