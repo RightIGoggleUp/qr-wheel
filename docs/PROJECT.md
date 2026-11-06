@@ -88,3 +88,6 @@ Dates are America/New_York.
 ### test13 additions (same build)
 - Settings now has LAST SCAN - WHAT IT READ: raw OCR text from the last badge scan, for debugging name picks (Patrick asked for visibility, 9:23 PM).
 - Name picking merges stacked same-size lines ("Patrick" over "Kea" -> "Patrick Kea"; his real badge prints stacked). Orientation: ML Kit handles rotated photos natively.
+
+## v0.1.0-test14 (2026-11-05)
+- Brand spelling confirmed by Patrick: "FloorDay" ONE WORD (WhatsApp 9:32:07 PM). Info screen header now: FloorDay (40sp bold) / "by AnotherPatKreation" (14sp dim) / form subtitle. Launcher name, export subject, and header all use FloorDay.

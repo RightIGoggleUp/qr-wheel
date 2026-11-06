@@ -428,7 +428,7 @@ class MainActivity : Activity() {
             val intent = Intent(Intent.ACTION_SEND).apply {
                 type = "application/vnd.ms-excel"
                 putExtra(Intent.EXTRA_EMAIL, arrayOf("anotherpatkreation@gmail.com"))
-                putExtra(Intent.EXTRA_SUBJECT, "Floor Day players - $today")
+                putExtra(Intent.EXTRA_SUBJECT, "FloorDay players - $today")
                 putExtra(Intent.EXTRA_TEXT, "${list.size} players in the drawing, attached as a spreadsheet. Opens in Excel.")
                 putExtra(Intent.EXTRA_STREAM, uri)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)

@@ -16,13 +16,13 @@ class PrivacyActivity : Activity() {
         val PRIVACY_TEXT = """
 Effective: November 5, 2026
 
-Floor Day is built by Another Pat Kreation - anotherpatkreation.com/floorday
+FloorDay is built by Another Pat Kreation - anotherpatkreation.com/floorday
 
 WHAT THE APP DOES
-Floor Day runs signups and prize drawings at in-person events. Names, email addresses, survey answers, settings, and the winner email template are stored only in the app's private storage on this device.
+FloorDay runs signups and prize drawings at in-person events. Names, email addresses, survey answers, settings, and the winner email template are stored only in the app's private storage on this device.
 
 BADGE SCANNING
-- Photos are taken through your device's own camera app. Floor Day never holds or asks for the camera permission.
+- Photos are taken through your device's own camera app. FloorDay never holds or asks for the camera permission.
 - Badge photos are processed entirely on this device using Google's ML Kit text recognition. Recognition happens on-device: photos and the text pulled from them are not uploaded to us, to Google, or to anyone else.
 - The first time you scan, the phone downloads the recognition model from Google Play services. That is a one-time file download - no personal data is sent - and it is cached afterward.
 - Each scan photo is deleted right after it is read.
@@ -47,7 +47,7 @@ DATA RETENTION AND DELETION
 Players stay on the device until removed. NEW GAME in Settings deletes all players. Uninstalling the app deletes everything it stored.
 
 CHILDREN
-Floor Day is a tool for event organizers and is not directed at children.
+FloorDay is a tool for event organizers and is not directed at children.
 
 CHANGES
 Any change to this policy ships in the app and is posted at anotherpatkreation.com/floorday.
@@ -56,7 +56,7 @@ CONTACT
 contactme@anotherpatkreation.com
 
 LEGAL
-Floor Day is provided as-is for event organizers. Information collected from entrants belongs to the organizer's event; the organizer is responsible for how it is used.
+FloorDay is provided as-is for event organizers. Information collected from entrants belongs to the organizer's event; the organizer is responsible for how it is used.
         """.trimIndent()
     }
 }
