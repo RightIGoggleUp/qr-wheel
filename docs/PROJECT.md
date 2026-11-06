@@ -61,6 +61,9 @@ Dates are America/New_York.
 - Export: Option 4 column in the CSV; opt4 persisted per player.
 
 ## v0.1.0-test10 (2026-11-05)
-- Badge scanning: camera button above the Full name field opens the camera; on-device OCR (Google ML Kit, bundled Latin model - no network, no third-party service, no account) reads the badge.
+- Badge scanning: camera button above the Full name field opens the camera; on-device OCR (Google ML Kit - on-device recognition, no third-party service, no account) reads the badge.
 - Autofill: name = the tallest non-email, non-phone, non-URL printed line (badges print the name biggest); email = printed email if found, otherwise generated as first-initial + last name @lenovo.com per Patrick's spec (2026-11-05 9:00 PM). Both fields stay editable before ADD.
 - APK now arm64-v8a only (bundled OCR model); ~16MB vs ~1.8MB before. razr and all modern event phones are arm64.
+
+### test10 amendment
+- Switched OCR to the thin Play Services ML Kit variant (same on-device API; model downloads on first scan, cached after). APK 16MB -> 3.5MB. Bundled 16MB builds failed GitHub release upload repeatedly (silent + spurious "big file" errors).
