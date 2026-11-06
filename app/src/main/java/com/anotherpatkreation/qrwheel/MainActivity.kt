@@ -6,10 +6,13 @@ import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.util.Patterns
 import android.view.View
 import android.view.Window
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import java.util.concurrent.Executors
@@ -18,6 +21,7 @@ class MainActivity : Activity() {
 
     private val io = Executors.newSingleThreadExecutor()
     private var entries: List<Entry> = emptyList()
+    private var demo = false
     private lateinit var wheelView: WheelView
     private lateinit var txtCount: TextView
     private lateinit var btnSpin: TextView
@@ -38,13 +42,16 @@ class MainActivity : Activity() {
         findViewById<ImageButton>(R.id.btnSettings).setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
-        findViewById<View>(R.id.tabQr).setOnClickListener { showTab(true) }
-        findViewById<View>(R.id.tabWheel).setOnClickListener { showTab(false) }
-        findViewById<View>(R.id.btnRefresh).setOnClickListener { loadEntries() }
+        findViewById<ImageButton>(R.id.btnEditLink).setOnClickListener { showLinkDialog() }
+        findViewById<View>(R.id.tabInfo).setOnClickListener { showTab(0) }
+        findViewById<View>(R.id.tabQr).setOnClickListener { showTab(1) }
+        findViewById<View>(R.id.tabWheel).setOnClickListener { showTab(2) }
+
+        findViewById<TextView>(R.id.btnAddEntry).setOnClickListener { addEntry() }
 
         btnSpin.setOnClickListener {
             if (entries.isEmpty()) {
-                Toast.makeText(this, "No signups yet", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "No names yet - add some on the Info tab", Toast.LENGTH_SHORT).show()
             } else {
                 btnSpin.isEnabled = false
                 wheelView.spin()
@@ -57,21 +64,24 @@ class MainActivity : Activity() {
             showWinner(winner)
         }
 
-        showTab(true)
+        showTab(0)
     }
 
     override fun onResume() {
         super.onResume()
         renderQr()
-        loadEntries()
+        loadLocalEntries()
     }
 
-    private fun showTab(qr: Boolean) {
-        findViewById<View>(R.id.screenQr).visibility = if (qr) View.VISIBLE else View.GONE
-        findViewById<View>(R.id.screenWheel).visibility = if (qr) View.GONE else View.VISIBLE
-        styleTab(R.id.tabQrIcon, R.id.tabQrLabel, R.id.tabQrDot, qr)
-        styleTab(R.id.tabWheelIcon, R.id.tabWheelLabel, R.id.tabWheelDot, !qr)
-        if (!qr) loadEntries()
+    private fun showTab(tab: Int) {
+        findViewById<View>(R.id.screenInfo).visibility = if (tab == 0) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.screenQr).visibility = if (tab == 1) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.screenWheel).visibility = if (tab == 2) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.btnEditLink).visibility = if (tab == 1) View.VISIBLE else View.GONE
+        styleTab(R.id.tabInfoIcon, R.id.tabInfoLabel, R.id.tabInfoDot, tab == 0)
+        styleTab(R.id.tabQrIcon, R.id.tabQrLabel, R.id.tabQrDot, tab == 1)
+        styleTab(R.id.tabWheelIcon, R.id.tabWheelLabel, R.id.tabWheelDot, tab == 2)
+        if (tab == 2) loadLocalEntries()
     }
 
     private fun styleTab(iconId: Int, labelId: Int, dotId: Int, active: Boolean) {
@@ -82,37 +92,103 @@ class MainActivity : Activity() {
     }
 
     private fun renderQr() {
-        val url = Prefs.signupUrl(this)
-        findViewById<TextView>(R.id.txtQrUrl).text =
-            url.removePrefix("https://").removePrefix("http://")
-        findViewById<QrCardView>(R.id.qrCard).setUrl(url)
+        findViewById<QrCardView>(R.id.qrCard).setUrl(Prefs.signupUrl(this))
     }
 
-    private fun loadEntries() {
-        val base = Prefs.apiBase(this)
-        if (base.isEmpty()) {
-            setEntries(demoEntries, demo = true)
+    private fun showLinkDialog() {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.dialog_link)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        val inp = dialog.findViewById<EditText>(R.id.inpLink)
+        inp.setText(Prefs.signupUrl(this))
+        inp.setSelectAllOnFocus(true)
+        dialog.findViewById<TextView>(R.id.btnSaveLink).setOnClickListener {
+            var link = inp.text.toString().trim()
+            if (link.isNotBlank() && !link.contains("://")) link = "https://$link"
+            if (link.isBlank()) {
+                Toast.makeText(this, "Enter a link first", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            Prefs.save(this, link, Prefs.apiBase(this), Prefs.adminToken(this))
+            renderQr()
+            dialog.dismiss()
+        }
+        dialog.findViewById<TextView>(R.id.btnCancelLink).setOnClickListener { dialog.dismiss() }
+        dialog.show()
+    }
+
+    private fun addEntry() {
+        val nameInp = findViewById<EditText>(R.id.inpName)
+        val emailInp = findViewById<EditText>(R.id.inpEmail)
+        val name = nameInp.text.toString().trim()
+        val email = emailInp.text.toString().trim()
+        if (name.isBlank()) {
+            Toast.makeText(this, "Name is required", Toast.LENGTH_SHORT).show()
             return
         }
-        txtCount.text = "Loading signups…"
-        io.execute {
-            try {
-                val list = Api.fetchEntries(base, Prefs.adminToken(this))
-                runOnUiThread { setEntries(list, demo = false) }
-            } catch (e: Exception) {
-                runOnUiThread {
-                    txtCount.text = "Could not reach backend - check Settings"
-                }
-            }
+        if (email.isNotBlank() && !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this, "That email does not look right", Toast.LENGTH_SHORT).show()
+            return
         }
+        LocalStore.add(this, name, email)
+        nameInp.text.clear()
+        emailInp.text.clear()
+        nameInp.requestFocus()
+        loadLocalEntries()
+    }
+
+    private fun loadLocalEntries() {
+        val stored = LocalStore.list(this)
+        demo = stored.isEmpty()
+        setEntries(if (demo) demoEntries else stored, demo)
+        renderInfoList(stored)
     }
 
     private fun setEntries(list: List<Entry>, demo: Boolean) {
         entries = list
         wheelView.setNames(list.map { it.name.substringBefore(' ').ifBlank { it.name } })
         val n = list.size
-        val label = if (n == 1) "1 person signed up" else "$n people signed up"
+        val label = if (n == 1) "1 name on the wheel" else "$n names on the wheel"
         txtCount.text = if (demo) "$label (demo)" else label
+        findViewById<TextView>(R.id.txtInfoCount).text =
+            if (demo) "No names yet - showing demo names on the wheel"
+            else if (n == 1) "1 name in the drawing" else "$n names in the drawing"
+    }
+
+    private fun renderInfoList(stored: List<Entry>) {
+        val container = findViewById<LinearLayout>(R.id.listEntries)
+        container.removeAllViews()
+        val pad = (14 * resources.displayMetrics.density).toInt()
+        for (e in stored.sortedByDescending { it.id }) {
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+            }
+            val label = TextView(this).apply {
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                text = if (e.email.isBlank()) e.name else "${e.name} - ${e.email}"
+                setTextColor(Color.parseColor("#F5F5F7"))
+                textSize = 17f
+                setPadding(0, pad, 0, pad)
+            }
+            val del = TextView(this).apply {
+                text = "Remove"
+                setTextColor(Color.parseColor("#E5484D"))
+                textSize = 15f
+                setPadding(pad, pad, 0, pad)
+                setOnClickListener {
+                    LocalStore.remove(this@MainActivity, e.id)
+                    loadLocalEntries()
+                }
+            }
+            row.addView(label)
+            row.addView(del)
+            container.addView(row)
+        }
     }
 
     private fun showWinner(w: Entry) {
@@ -121,22 +197,16 @@ class MainActivity : Activity() {
         dialog.setContentView(R.layout.dialog_winner)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.findViewById<TextView>(R.id.txtWinName).text = w.name
-        val details = buildString {
-            if (w.email.isNotBlank()) append(w.email).append('\n')
-            if (w.sells.isNotBlank()) append("Sells: ").append(w.sells)
-        }.trim()
         dialog.findViewById<TextView>(R.id.txtWinDetails).text =
-            details.ifBlank { "No contact details on file" }
+            if (w.email.isNotBlank()) w.email else "No email on file"
 
         val notifyBtn = dialog.findViewById<TextView>(R.id.btnNotifyWinner)
         notifyBtn.setOnClickListener {
             notifyBtn.isEnabled = false
             val base = Prefs.apiBase(this)
             if (base.isEmpty()) {
-                // demo mode: hand a pre-written email to the mail app instead
-                val to = w.email
-                if (to.isBlank()) {
-                    Toast.makeText(this, "Connect the backend in Settings to notify winners", Toast.LENGTH_LONG).show()
+                if (w.email.isBlank()) {
+                    Toast.makeText(this, "No email on file for ${w.name}", Toast.LENGTH_LONG).show()
                     notifyBtn.isEnabled = true
                 } else {
                     openMailto(w)
@@ -153,9 +223,8 @@ class MainActivity : Activity() {
                                     dialog.dismiss()
                                 }
                                 res.reason == "not_connected" -> {
-                                    Toast.makeText(this, "Outlook not connected yet - opening your mail app instead", Toast.LENGTH_LONG).show()
-                                    openMailto(w)
-                                    dialog.dismiss()
+                                    Toast.makeText(this, "Email route not connected yet - opening your mail app instead", Toast.LENGTH_LONG).show()
+                                    if (w.email.isNotBlank()) { openMailto(w); dialog.dismiss() } else notifyBtn.isEnabled = true
                                 }
                                 else -> {
                                     Toast.makeText(this, "Could not send (${res.reason}) - try again", Toast.LENGTH_LONG).show()

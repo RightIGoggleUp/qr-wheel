@@ -20,7 +20,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Signup page URL (what the QR code opens)"
+            android:text="QR link (what the QR code opens)"
             android:textColor="@color/text"
             android:textSize="15sp"
             android:textStyle="bold" />
@@ -33,7 +33,7 @@
             android:padding="14dp"
             android:textColor="@color/text"
             android:textColorHint="@color/text_dim"
-            android:hint="https://anotherpatkreation.com/signup"
+            android:hint="https://your-link.com"
             android:inputType="textUri"
             android:textSize="15sp" />
         <TextView
@@ -91,7 +91,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="With no backend set, the wheel uses demo names so you can try the spin. Once the backend is live, paste its URL and token here and the wheel fills with real signups."
+            android:text="The wheel spins from the names you add on the Info tab (demo names until then). The backend fields are only needed for the email-sending routes once the site is live."
             android:textColor="@color/text_dim"
             android:textSize="14sp"
             android:layout_marginTop="20dp" />
