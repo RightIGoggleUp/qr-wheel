@@ -3,6 +3,8 @@ package com.anotherpatkreation.qrwheel
 import android.app.Activity
 import android.app.Dialog
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
 import android.provider.MediaStore
@@ -19,6 +21,7 @@ import android.view.View
 import android.view.Window
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -46,7 +49,7 @@ class MainActivity : Activity() {
         findViewById<ImageButton>(R.id.btnSettings).setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
-        findViewById<ImageButton>(R.id.btnEditLink).setOnClickListener { showLinkDialog() }
+        findViewById<ImageButton>(R.id.btnEditLink).setOnClickListener { showSlotDialog(0) }
         findViewById<ImageButton>(R.id.btnScanBadge).setOnClickListener { launchScan() }
         findViewById<View>(R.id.tabInfo).setOnClickListener { showTab(0) }
         findViewById<View>(R.id.tabQr).setOnClickListener { showTab(1) }
@@ -81,7 +84,7 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
-        renderQr()
+        renderQrPage()
         renderOptionRows()
         loadLocalEntries()
     }
@@ -144,33 +147,102 @@ class MainActivity : Activity() {
         findViewById<View>(dotId).visibility = if (active) View.VISIBLE else View.INVISIBLE
     }
 
-    private fun renderQr() {
-        findViewById<QrCardView>(R.id.qrCard).setUrl(Prefs.signupUrl(this))
+    private val qrCells = intArrayOf(R.id.qrCell1, R.id.qrCell2, R.id.qrCell3, R.id.qrCell4)
+    private val qrCards = intArrayOf(R.id.qrCard1, R.id.qrCard2, R.id.qrCard3, R.id.qrCard4)
+    private val qrImgs = intArrayOf(R.id.imgQr1, R.id.imgQr2, R.id.imgQr3, R.id.imgQr4)
+    private val qrLabels = intArrayOf(R.id.txtQrLabel1, R.id.txtQrLabel2, R.id.txtQrLabel3, R.id.txtQrLabel4)
+
+    private fun renderQrPage() {
+        val title = Prefs.qrTitle(this)
+        val tv = findViewById<TextView>(R.id.txtQrTitle)
+        tv.text = title
+        tv.visibility = if (title.isBlank()) View.GONE else View.VISIBLE
+
+        val bg = findViewById<ImageView>(R.id.qrBg)
+        val path = Prefs.qrBgPath(this)
+        if (path.isNotBlank() && java.io.File(path).exists()) {
+            try {
+                val opts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                BitmapFactory.decodeFile(path, opts)
+                var sample = 1
+                while (maxOf(opts.outWidth, opts.outHeight) / (sample * 2) >= 1600) sample *= 2
+                val real = BitmapFactory.Options().apply { inSampleSize = sample }
+                bg.setImageBitmap(BitmapFactory.decodeFile(path, real))
+            } catch (e: Exception) {
+                bg.setImageDrawable(null)
+            }
+        } else {
+            bg.setImageDrawable(null)
+        }
+
+        val dm = resources.displayMetrics
+        var side = (dm.widthPixels * 0.40f).toInt()
+        val titleH = if (title.isBlank()) (dm.heightPixels * 0.03f) else (dm.heightPixels * 0.10f)
+        val maxByH = (dm.heightPixels * 0.365f).toInt()
+        if (side > maxByH) side = maxByH
+        val minSide = (96 * dm.density).toInt()
+        if (side < minSide) side = minSide
+
+        for (i in 0..3) {
+            val cell = findViewById<LinearLayout>(qrCells[i])
+            val link = Prefs.qrSlotLink(this, i)
+            if (link.isBlank()) {
+                cell.visibility = View.GONE
+                continue
+            }
+            cell.visibility = View.VISIBLE
+            val card = findViewById<FrameLayout>(qrCards[i])
+            val lp = card.layoutParams
+            lp.width = side; lp.height = side
+            card.layoutParams = lp
+            findViewById<ImageView>(qrImgs[i]).setImageBitmap(qrBitmap(link))
+            val lab = findViewById<TextView>(qrLabels[i])
+            val label = Prefs.qrSlotLabel(this, i)
+            lab.text = label
+            lab.visibility = if (label.isBlank()) View.INVISIBLE else View.VISIBLE
+            cell.setOnClickListener { showSlotDialog(i) }
+        }
     }
 
-    private fun showLinkDialog() {
+    private fun qrBitmap(content: String): Bitmap? {
+        return try {
+            val writer = com.google.zxing.qrcode.QRCodeWriter()
+            val matrix = writer.encode(content, com.google.zxing.BarcodeFormat.QR_CODE, 512, 512)
+            val bmp = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888)
+            bmp.eraseColor(Color.WHITE)
+            val ink = Color.parseColor("#111116")
+            for (x in 0 until 512) {
+                for (y in 0 until 512) {
+                    if (matrix.get(x, y)) bmp.setPixel(x, y, ink)
+                }
+            }
+            bmp
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun showSlotDialog(i: Int) {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.setContentView(R.layout.dialog_link)
+        dialog.setContentView(R.layout.dialog_qr_slot)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        val inp = dialog.findViewById<EditText>(R.id.inpLink)
-        inp.setText(Prefs.signupUrl(this))
-        inp.setSelectAllOnFocus(true)
-        dialog.findViewById<TextView>(R.id.btnSaveLink).setOnClickListener {
-            var link = inp.text.toString().trim()
+        dialog.findViewById<TextView>(R.id.txtSlotTitle).text = "QR code " + (i + 1)
+        val inpLink = dialog.findViewById<EditText>(R.id.inpSlotLink)
+        val inpLabel = dialog.findViewById<EditText>(R.id.inpSlotLabel)
+        inpLink.setText(Prefs.qrSlotLink(this, i))
+        inpLabel.setText(Prefs.qrSlotLabel(this, i))
+        inpLink.setSelectAllOnFocus(true)
+        dialog.findViewById<TextView>(R.id.btnSaveSlot).setOnClickListener {
+            var link = inpLink.text.toString().trim()
             if (link.isNotBlank() && !link.contains("://")) link = "https://$link"
-            if (link.isBlank()) {
-                Toast.makeText(this, "Enter a link first", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            Prefs.saveSignupUrl(this, link)
-            renderQr()
+            Prefs.saveQrSlot(this, i, link, inpLabel.text.toString())
+            renderQrPage()
             dialog.dismiss()
         }
-        dialog.findViewById<TextView>(R.id.btnCancelLink).setOnClickListener { dialog.dismiss() }
+        dialog.findViewById<TextView>(R.id.btnCancelSlot).setOnClickListener { dialog.dismiss() }
         dialog.show()
     }
-
 
     private fun launchScan() {
         val dir = File(cacheDir, "scans").apply { mkdirs() }

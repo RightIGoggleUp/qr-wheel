@@ -21,6 +21,7 @@ class SettingsActivity : Activity() {
         val inOrganizerEmail = findViewById<EditText>(R.id.inOrganizerEmail)
         val inParticipantSubject = findViewById<EditText>(R.id.inParticipantSubject)
         val inParticipantHtml = findViewById<EditText>(R.id.inParticipantHtml)
+        val inQrTitle = findViewById<EditText>(R.id.inQrTitle)
 
         val inWinSubject = findViewById<EditText>(R.id.inWinSubject)
         val inWinBody = findViewById<EditText>(R.id.inWinBody)
@@ -73,6 +74,18 @@ class SettingsActivity : Activity() {
         inOrganizerEmail.setText(Prefs.organizerEmail(this))
         inParticipantSubject.setText(Prefs.participantSubject(this))
         inParticipantHtml.setText(Prefs.participantHtml(this))
+        inQrTitle.setText(Prefs.qrTitle(this))
+        refreshQrBgStatus()
+        findViewById<TextView>(R.id.btnPickQrBg).setOnClickListener {
+            val intent = android.content.Intent(android.content.Intent.ACTION_GET_CONTENT).apply { type = "image/*" }
+            startActivityForResult(intent, REQ_QR_BG)
+        }
+        findViewById<TextView>(R.id.btnClearQrBg).setOnClickListener {
+            java.io.File(filesDir, "qr_bg.jpg").delete()
+            Prefs.setQrBgPath(this, "")
+            refreshQrBgStatus()
+            Toast.makeText(this, "Custom image removed", Toast.LENGTH_SHORT).show()
+        }
         inWinSubject.setText(Prefs.winnerSubject(this))
         val last = Prefs.lastScan(this)
         findViewById<TextView>(R.id.txtLastScan).text = if (last.isBlank()) "No scans yet - snap a badge on the Info tab, then come back here to see exactly what it read." else last
@@ -86,6 +99,7 @@ class SettingsActivity : Activity() {
             }
             Prefs.saveLocalEmailSettings(this, inSignup.text.toString(), organizer,
                 inParticipantSubject.text.toString(), inParticipantHtml.text.toString())
+            Prefs.saveQrTitle(this, inQrTitle.text.toString())
             Prefs.saveWinnerTemplate(this, inWinSubject.text.toString(), inWinBody.text.toString())
             Prefs.saveOptionRows(this, rows.mapIndexed { r, row ->
                 row.copy(
@@ -113,5 +127,33 @@ class SettingsActivity : Activity() {
                 .setNegativeButton("Cancel", null)
                 .show()
         }
+    }
+
+    private fun refreshQrBgStatus() {
+        val set = Prefs.qrBgPath(this).isNotBlank() && java.io.File(Prefs.qrBgPath(this)).exists()
+        findViewById<TextView>(R.id.txtQrBgStatus).text =
+            if (set) "Custom image set" else "Default dark background"
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQ_QR_BG && resultCode == android.app.Activity.RESULT_OK && data?.data != null) {
+            try {
+                contentResolver.openInputStream(data.data!!).use { input ->
+                    java.io.File(filesDir, "qr_bg.jpg").outputStream().use { output ->
+                        input?.copyTo(output)
+                    }
+                }
+                Prefs.setQrBgPath(this, java.io.File(filesDir, "qr_bg.jpg").absolutePath)
+                refreshQrBgStatus()
+                Toast.makeText(this, "Background image saved", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(this, "Could not load that image", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    companion object {
+        private const val REQ_QR_BG = 77
     }
 }

@@ -109,3 +109,12 @@ Dates are America/New_York.
 - CHANGED: prepareBccEmail() now matches Patrick's reference implementation verbatim: EXTRA_TEXT carries the HtmlCompat.fromHtml formatted text (not a trimmed plain string), EXTRA_HTML_TEXT carries the raw HTML, chooser title is "Send participant email with".
 - Live test feedback (Patrick, Nov 5 ~10:36 PM): BCC handoff passed in Outlook for Android (To/BCC/subject/chooser/manual send all correct - locked behavior), but the HTML body rendered blank. Fix per his spec: EXTRA_TEXT now carries the HtmlCompat.fromHtml Spanned (formatted fallback), EXTRA_HTML_TEXT carries the original HTML string unmodified. Default participant template replaced with his FloorDay Test template (bold/italic/link checks) to isolate whether Outlook or FloorDay is the limit.
 - BUILD: test17 ships as a DEBUG APK per his build requirement (same debug signing key as all prior builds - installs in place, data preserved).
+
+## v0.1.0-test18 (Nov 6, 2026) - Quadrant QR page (approved mockup)
+- DECISION: QR page rebuilt to Patrick's approved mockup (his "Yes", Nov 6 9:56 AM). Foldables/tablets are the primary target per his clarification; phones are the smaller-screen fallback. Fixed 2x2 quadrant grid on both, cards scale with screen size.
+- NEW: Up to 4 independent QR codes in quadrants, each with its own link + label below the code. Empty-link slots hide themselves. Slot 1 is the existing signup link (top-left), so nothing he configured breaks.
+- NEW: Editable page title at top (Settings > QR PAGE, default "FloorDay").
+- NEW: Custom full-page background image (Settings > QR PAGE > CHOOSE BACKGROUND IMAGE, copied into app storage, dark scrim keeps codes scannable). Removable.
+- CHANGED: Tap any code (or the pencil) to edit its link + label in place - the two-tap pattern he validated.
+- REMOVED: old single Lenovo-art QrCardView (plus lenovo_logo asset and dialog_link.xml), genuinely unused after the redesign, per his cleanup rule.
+- Local-first, no backend/auth changes; BCC/email behavior untouched.

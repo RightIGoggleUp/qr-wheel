@@ -9,8 +9,8 @@ android {
         applicationId = "com.anotherpatkreation.qrwheel"
         minSdk = 26
         targetSdk = 34
-        versionCode = 17
-        versionName = "0.1.0-test17"
+        versionCode = 18
+        versionName = "0.1.0-test18"
         ndk { abiFilters += listOf("arm64-v8a") }
     }
     buildTypes {

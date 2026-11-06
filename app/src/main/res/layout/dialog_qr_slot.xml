@@ -6,9 +6,10 @@
     android:background="@drawable/bg_input_dark"
     android:padding="28dp">
     <TextView
+        android:id="@+id/txtSlotTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="QR link"
+        android:text="QR code 1"
         android:textColor="@color/accent"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -16,13 +17,13 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="The code updates instantly for whatever link you enter."
+        android:text="The code updates instantly. Leave the link blank to hide this quadrant."
         android:textColor="@color/text_dim"
         android:textSize="15sp"
         android:layout_marginTop="8dp"
         android:lineSpacingMultiplier="1.3" />
     <EditText
-        android:id="@+id/inpLink"
+        android:id="@+id/inpSlotLink"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_marginTop="18dp"
@@ -35,20 +36,33 @@
         android:hint="https://your-link.com"
         android:inputType="textUri"
         android:singleLine="true" />
+    <EditText
+        android:id="@+id/inpSlotLabel"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="12dp"
+        android:background="#FF15151D"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:textColor="@color/text"
+        android:textColorHint="#FF6E6E7A"
+        android:textSize="16sp"
+        android:hint="Label below the code"
+        android:singleLine="true" />
     <TextView
-        android:id="@+id/btnSaveLink"
+        android:id="@+id/btnSaveSlot"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_marginTop="18dp"
         android:background="@drawable/bg_button_red"
         android:gravity="center"
-        android:text="SAVE LINK"
+        android:text="SAVE"
         android:textColor="#FFFFFFFF"
         android:textSize="16sp"
         android:textStyle="bold"
         android:letterSpacing="0.05" />
     <TextView
-        android:id="@+id/btnCancelLink"
+        android:id="@+id/btnCancelSlot"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_marginTop="10dp"

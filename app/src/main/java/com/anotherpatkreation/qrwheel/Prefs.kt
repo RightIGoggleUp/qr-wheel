@@ -32,6 +32,42 @@ Lenovo</p>"""
     fun winnerBody(c: Context): String =
         c.getSharedPreferences(FILE, 0).getString(KEY_WIN_BODY, DEFAULT_WIN_BODY) ?: DEFAULT_WIN_BODY
 
+
+    private const val KEY_QR_TITLE = "qr_title"
+    private const val KEY_QR_BG = "qr_bg_path"
+    private const val KEY_QR_LINK = "qr_link_"
+    private const val KEY_QR_LABEL = "qr_label_"
+    const val DEFAULT_QR_TITLE = "FloorDay"
+
+    fun qrTitle(c: Context): String =
+        c.getSharedPreferences(FILE, 0).getString(KEY_QR_TITLE, DEFAULT_QR_TITLE) ?: DEFAULT_QR_TITLE
+
+    fun qrBgPath(c: Context): String =
+        c.getSharedPreferences(FILE, 0).getString(KEY_QR_BG, "") ?: ""
+
+    fun qrSlotLink(c: Context, i: Int): String {
+        val v = c.getSharedPreferences(FILE, 0).getString(KEY_QR_LINK + i, "") ?: ""
+        return if (i == 0 && v.isBlank()) signupUrl(c) else v
+    }
+
+    fun qrSlotLabel(c: Context, i: Int): String =
+        c.getSharedPreferences(FILE, 0).getString(KEY_QR_LABEL + i, "") ?: ""
+
+    fun saveQrSlot(c: Context, i: Int, link: String, label: String) {
+        val e = c.getSharedPreferences(FILE, 0).edit()
+        if (i == 0) e.putString(KEY_SIGNUP_URL, link.trim()) else e.putString(KEY_QR_LINK + i, link.trim())
+        e.putString(KEY_QR_LABEL + i, label.trim()).apply()
+    }
+
+    fun saveQrTitle(c: Context, title: String) {
+        c.getSharedPreferences(FILE, 0).edit()
+            .putString(KEY_QR_TITLE, title.trim().ifBlank { DEFAULT_QR_TITLE }).apply()
+    }
+
+    fun setQrBgPath(c: Context, path: String) {
+        c.getSharedPreferences(FILE, 0).edit().putString(KEY_QR_BG, path).apply()
+    }
+
     fun saveSignupUrl(c: Context, signupUrl: String) {
         c.getSharedPreferences(FILE, 0).edit()
             .putString(KEY_SIGNUP_URL, signupUrl.trim().ifBlank { DEFAULT_SIGNUP_URL })

@@ -20,7 +20,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="QR link (what the QR code opens)"
+            android:text="QR link 1 (top-left code)"
             android:textColor="@color/text"
             android:textSize="15sp"
             android:textStyle="bold" />
@@ -36,6 +36,78 @@
             android:hint="https://your-link.com"
             android:inputType="textUri"
             android:textSize="15sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="QR PAGE"
+            android:textColor="@color/text"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Page title"
+            android:textColor="@color/text"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+        <EditText
+            android:id="@+id/inQrTitle"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_input_dark"
+            android:padding="14dp"
+            android:textColor="@color/text"
+            android:textColorHint="@color/text_dim"
+            android:hint="FloorDay"
+            android:singleLine="true"
+            android:textSize="15sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="Background image"
+            android:textColor="@color/text"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Fills the QR page behind the codes. A dark scrim is applied so codes stay scannable."
+            android:textColor="@color/text_dim"
+            android:textSize="13sp" />
+        <TextView
+            android:id="@+id/btnPickQrBg"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_button_dark"
+            android:gravity="center"
+            android:text="CHOOSE BACKGROUND IMAGE"
+            android:textColor="@color/text"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05" />
+        <TextView
+            android:id="@+id/txtQrBgStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Default dark background"
+            android:textColor="@color/text_dim"
+            android:textSize="13sp" />
+        <TextView
+            android:id="@+id/btnClearQrBg"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:layout_marginTop="2dp"
+            android:gravity="center_vertical"
+            android:text="Remove custom image"
+            android:textColor="@color/accent"
+            android:textSize="14sp" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

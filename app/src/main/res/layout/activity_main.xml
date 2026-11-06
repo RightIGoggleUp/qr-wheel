@@ -143,21 +143,179 @@
                 android:letterSpacing="0.05" />
         </LinearLayout>
 
-        <LinearLayout
+        <FrameLayout
             android:id="@+id/screenQr"
-            android:visibility="gone"
-            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingStart="14dp"
-            android:paddingEnd="14dp"
-            android:paddingBottom="22dp">
-            <com.anotherpatkreation.qrwheel.QrCardView
-                android:id="@+id/qrCard"
+            android:visibility="gone">
+            <ImageView
+                android:id="@+id/qrBg"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:contentDescription="QR code" />
-        </LinearLayout>
+                android:scaleType="centerCrop" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#B30E0E12" />
+            <LinearLayout
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="16dp">
+                <TextView
+                    android:id="@+id/txtQrTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="26dp"
+                    android:text="FloorDay"
+                    android:textColor="@color/text"
+                    android:textSize="38sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginTop="16dp">
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1">
+                <LinearLayout
+                    android:id="@+id/qrCell1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="match_parent">
+                    <FrameLayout
+                        android:id="@+id/qrCard1"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:background="@drawable/bg_qr_card">
+                        <ImageView
+                            android:id="@+id/imgQr1"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_margin="10dp"
+                            android:contentDescription="QR code 1" />
+                    </FrameLayout>
+                    <TextView
+                        android:id="@+id/txtQrLabel1"
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_horizontal"
+                        android:textColor="@color/text"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:maxLines="2" />
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/qrCell2"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="match_parent">
+                    <FrameLayout
+                        android:id="@+id/qrCard2"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:background="@drawable/bg_qr_card">
+                        <ImageView
+                            android:id="@+id/imgQr2"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_margin="10dp"
+                            android:contentDescription="QR code 2" />
+                    </FrameLayout>
+                    <TextView
+                        android:id="@+id/txtQrLabel2"
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_horizontal"
+                        android:textColor="@color/text"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:maxLines="2" />
+                </LinearLayout>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1">
+                <LinearLayout
+                    android:id="@+id/qrCell3"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="match_parent">
+                    <FrameLayout
+                        android:id="@+id/qrCard3"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:background="@drawable/bg_qr_card">
+                        <ImageView
+                            android:id="@+id/imgQr3"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_margin="10dp"
+                            android:contentDescription="QR code 3" />
+                    </FrameLayout>
+                    <TextView
+                        android:id="@+id/txtQrLabel3"
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_horizontal"
+                        android:textColor="@color/text"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:maxLines="2" />
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/qrCell4"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="match_parent">
+                    <FrameLayout
+                        android:id="@+id/qrCard4"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:background="@drawable/bg_qr_card">
+                        <ImageView
+                            android:id="@+id/imgQr4"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_margin="10dp"
+                            android:contentDescription="QR code 4" />
+                    </FrameLayout>
+                    <TextView
+                        android:id="@+id/txtQrLabel4"
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_horizontal"
+                        android:textColor="@color/text"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:maxLines="2" />
+                </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </FrameLayout>
 
         <LinearLayout
             android:id="@+id/screenWheel"
