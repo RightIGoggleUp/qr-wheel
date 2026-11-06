@@ -132,6 +132,7 @@ class MainActivity : Activity() {
         findViewById<View>(R.id.screenWheel).visibility = if (tab == 2) View.VISIBLE else View.GONE
         findViewById<View>(R.id.screenPlayers).visibility = if (tab == 3) View.VISIBLE else View.GONE
         findViewById<View>(R.id.btnEditLink).visibility = if (tab == 1) View.VISIBLE else View.GONE
+        if (tab == 1) renderQrPage()
         styleTab(R.id.tabInfoIcon, R.id.tabInfoLabel, R.id.tabInfoDot, tab == 0)
         styleTab(R.id.tabQrIcon, R.id.tabQrLabel, R.id.tabQrDot, tab == 1)
         styleTab(R.id.tabWheelIcon, R.id.tabWheelLabel, R.id.tabWheelDot, tab == 2)
@@ -179,7 +180,13 @@ class MainActivity : Activity() {
         // so card+label blocks could overflow their row bands by a few dp.
         val density = resources.displayMetrics.density
         val grid = findViewById<LinearLayout>(R.id.qrGrid)
-        if (grid.width == 0 || grid.height == 0) { grid.post { renderQrPage() }; return }
+        if (grid.width == 0 || grid.height == 0) {
+            // Not laid out yet. Only re-run when the QR screen is actually
+            // visible (posting blindly from onResume would loop forever while
+            // the screen is GONE); showTab() calls us again on tab select.
+            if (findViewById<View>(R.id.screenQr).visibility == View.VISIBLE) grid.post { renderQrPage() }
+            return
+        }
         val labelBlock = (54 * density).toInt()      // 8dp margin + 46dp label
         val rowH = grid.height / 2
         val cellW = grid.width / 2
