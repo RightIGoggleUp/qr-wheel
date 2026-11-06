@@ -67,3 +67,10 @@ Dates are America/New_York.
 
 ### test10 amendment
 - Switched OCR to the thin Play Services ML Kit variant (same on-device API; model downloads on first scan, cached after). APK 16MB -> 3.5MB. Bundled 16MB builds failed GitHub release upload repeatedly (silent + spurious "big file" errors).
+
+## Product name: Floor Day (2026-11-05)
+- Patrick named the app "Floor Day" (WhatsApp 9:03:51 PM). Designated home: anotherpatkreation.com/floorday (domain mid-transfer; no DNS work yet).
+- Repo stays RightIGoggleUp/qr-wheel for now; product name vs repo name noted.
+
+## v0.1.0-test11 (2026-11-05)
+- Rebrand: display name "Floor Day" (launcher + system), Excel export email subject "Floor Day players - <date>". Package id unchanged (com.anotherpatkreation.qrwheel).
