@@ -49,7 +49,7 @@ class MainActivity : Activity() {
         findViewById<ImageButton>(R.id.btnSettings).setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
-        findViewById<ImageButton>(R.id.btnEditLink).setOnClickListener { showSlotDialog(0) }
+        findViewById<ImageButton>(R.id.btnEditLink).setOnClickListener { showSlotPicker() }
         findViewById<ImageButton>(R.id.btnScanBadge).setOnClickListener { launchScan() }
         findViewById<View>(R.id.tabInfo).setOnClickListener { showTab(0) }
         findViewById<View>(R.id.tabQr).setOnClickListener { showTab(1) }
@@ -199,14 +199,19 @@ class MainActivity : Activity() {
             val lp = card.layoutParams
             lp.width = side; lp.height = side
             card.layoutParams = lp
+            lastQrSidePx = side
             findViewById<ImageView>(qrImgs[i]).setImageBitmap(qrBitmap(link))
             val lab = findViewById<TextView>(qrLabels[i])
             val label = Prefs.qrSlotLabel(this, i)
+            lab.maxLines = 2
+            lab.ellipsize = android.text.TextUtils.TruncateAt.END
             lab.text = label
             lab.visibility = if (label.isBlank()) View.INVISIBLE else View.VISIBLE
             cell.setOnClickListener { showSlotDialog(i) }
         }
     }
+
+    private var lastQrSidePx = 0
 
     private fun qrBitmap(content: String): Bitmap? {
         return try {
@@ -226,6 +231,45 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun showSlotPicker() {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.dialog_qr_picker)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        val list = dialog.findViewById<LinearLayout>(R.id.listQrSlots)
+        val density = resources.displayMetrics.density
+        for (i in 0..3) {
+            val link = Prefs.qrSlotLink(this, i)
+            val label = Prefs.qrSlotLabel(this, i)
+            val summary = when {
+                label.isNotBlank() -> label
+                link.isNotBlank() -> link
+                else -> "Empty - tap to set up"
+            }
+            val row = TextView(this).apply {
+                text = "QR CODE " + (i + 1) + "\n" + summary
+                setTextColor(Color.WHITE)
+                textSize = 16f
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+                setLineSpacing(0f, 1.15f)
+                val pad = (16 * density).toInt()
+                setPadding(pad, pad, pad, pad)
+                setBackgroundResource(R.drawable.bg_button_dark)
+                val lp2 = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                lp2.topMargin = (10 * density).toInt()
+                layoutParams = lp2
+                setOnClickListener {
+                    dialog.dismiss()
+                    showSlotDialog(i)
+                }
+            }
+            // summary line in dim: overlay via spannable-free approach - second TextView look
+            list.addView(row)
+        }
+        dialog.findViewById<TextView>(R.id.btnCancelPicker).setOnClickListener { dialog.dismiss() }
+        dialog.show()
+    }
+
     private fun showSlotDialog(i: Int) {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -237,6 +281,12 @@ class MainActivity : Activity() {
         inpLink.setText(Prefs.qrSlotLink(this, i))
         inpLabel.setText(Prefs.qrSlotLabel(this, i))
         inpLink.setSelectAllOnFocus(true)
+        // Limit the label to what fits two rows under the card, using real font metrics.
+        val side = if (lastQrSidePx > 0) lastQrSidePx else (resources.displayMetrics.widthPixels * 0.40f).toInt()
+        val probe = TextView(this).apply { textSize = 16f; setTypeface(typeface, android.graphics.Typeface.BOLD) }
+        val charW = probe.paint.measureText("n")
+        val maxChars = (2 * (side / charW)).toInt().coerceAtLeast(8)
+        inpLabel.filters = arrayOf(android.text.InputFilter.LengthFilter(maxChars))
         dialog.findViewById<TextView>(R.id.btnSaveSlot).setOnClickListener {
             var link = inpLink.text.toString().trim()
             if (link.isNotBlank() && !link.contains("://")) link = "https://$link"

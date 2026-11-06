@@ -122,3 +122,5 @@ Dates are America/New_York.
 ## v0.1.0-test19 (Nov 6, 2026) - QR label clipping fix
 - FIX: Patrick's device screenshot (razr, ~3x density) showed the label under a code vertically clipped. Root cause: card-side math ignored density - the 46dp label block + card overflowed each grid row, and the cell clipped the label. Card side now subtracts the label block and system-bar/tab reserves in dp-correct pixels.
 - Custom background image confirmed working on his device.
+- NEW (same release, his 10:27 AM spec): pencil now opens a QR CODE 1/2/3/4 picker (all four slots, configured or empty), then link + name editing - same pattern as the Info-page option buttons. Labels capped by real font metrics to what fits two rows under the card; render clamps to 2 lines with ellipsis as a second guard.
+- PARKED (roadmap, his 10:28 AM idea): multi-device data combine/sync for ~10 collectors at one event. Not implemented; no cloud permission. Merge-after-collection vs live sync to be decided later with privacy rules intact.

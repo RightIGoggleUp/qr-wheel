@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_input_dark"
+    android:padding="28dp">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="EDIT QR CODE"
+        android:textColor="@color/accent"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.08" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pick a quadrant, then set its link and name."
+        android:textColor="@color/text_dim"
+        android:textSize="15sp"
+        android:layout_marginTop="8dp"
+        android:lineSpacingMultiplier="1.3" />
+    <LinearLayout
+        android:id="@+id/listQrSlots"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp" />
+    <TextView
+        android:id="@+id/btnCancelPicker"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:text="Cancel"
+        android:textColor="@color/text_dim"
+        android:textSize="16sp" />
+</LinearLayout>
