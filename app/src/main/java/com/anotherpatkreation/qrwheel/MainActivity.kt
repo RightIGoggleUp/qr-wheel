@@ -91,7 +91,7 @@ class MainActivity : Activity() {
                 val selected = optSelections[r]?.contains(i) == true
                 val btn = TextView(this).apply {
                     text = if (selected) {
-                        val span = android.text.SpannableString("\u23FB  " + label)
+                        val span = android.text.SpannableString("\u25CF  " + label)
                         span.setSpan(android.text.style.ForegroundColorSpan(Color.parseColor("#6FBA2C")), 0, 1, 0)
                         span
                     } else label
