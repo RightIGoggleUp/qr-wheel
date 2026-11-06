@@ -67,6 +67,12 @@ object Prefs {
         e.apply()
     }
 
+    fun saveLastScan(c: Context, text: String) {
+        c.getSharedPreferences(FILE, 0).edit().putString("last_scan_text", text).apply()
+    }
+
+    fun lastScan(c: Context): String = c.getSharedPreferences(FILE, 0).getString("last_scan_text", "") ?: ""
+
     fun saveWinnerTemplate(c: Context, subject: String, body: String) {
         c.getSharedPreferences(FILE, 0).edit()
             .putString(KEY_WIN_SUBJECT, subject)

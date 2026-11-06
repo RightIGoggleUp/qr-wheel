@@ -169,6 +169,25 @@
             android:textSize="14sp"
             android:layout_marginTop="20dp" />
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="LAST SCAN - WHAT IT READ"
+            android:textColor="@color/text"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05" />
+        <TextView
+            android:id="@+id/txtLastScan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_input_dark"
+            android:padding="14dp"
+            android:textColor="@color/text_dim"
+            android:textSize="13sp"
+            android:textIsSelectable="true" />
+        <TextView
             android:id="@+id/btnPrivacy"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

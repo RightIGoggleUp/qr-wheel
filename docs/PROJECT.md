@@ -79,3 +79,12 @@ Dates are America/New_York.
 - Privacy and Legal page: link at the bottom of Settings opens an in-app page (C90 pattern: in-app, no GitHub links, anotherpatkreation.com/floorday as the only pointer, contact contactme@anotherpatkreation.com).
 - Store-ready content: on-device storage, badge scan facts (no camera permission held, on-device ML Kit, one-time model download, scan photo deleted right after reading), no accounts/analytics/ads/tracking, data leaves only via user-sent emails, internet-only permission, deletion via NEW GAME/uninstall, children/changes/contact/legal sections.
 - MainActivity: each scan photo is deleted after OCR completes (was kept in cache before).
+
+## v0.1.0-test13 (2026-11-05)
+- Email generation rule fixed: only from a real first+last pair (2+ words); a single scanned name leaves the email blank (was ppatrick@lenovo.com).
+- Scan success/interim toasts removed (Patrick: "I don't truly want the messages at the bottom"); no keyboard popup after a scan. Failure toasts kept (actionable).
+- Name picking: blocklist for badge noise (Lenovo/ThinkPad/roles like EXHIBITOR/STAFF), and among the biggest lines it now prefers a two-word "First Last" line.
+
+### test13 additions (same build)
+- Settings now has LAST SCAN - WHAT IT READ: raw OCR text from the last badge scan, for debugging name picks (Patrick asked for visibility, 9:23 PM).
+- Name picking merges stacked same-size lines ("Patrick" over "Kea" -> "Patrick Kea"; his real badge prints stacked). Orientation: ML Kit handles rotated photos natively.

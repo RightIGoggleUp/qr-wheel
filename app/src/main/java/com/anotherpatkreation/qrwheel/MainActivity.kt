@@ -192,7 +192,6 @@ class MainActivity : Activity() {
         if (requestCode == REQ_SCAN && resultCode == RESULT_OK) {
             val uri = scanPhotoUri ?: return
             val photoPath = File(cacheDir, "scans").listFiles()?.firstOrNull { uri.toString().endsWith(it.name) }
-            Toast.makeText(this, "Reading badge...", Toast.LENGTH_SHORT).show()
             try {
                 val image = InputImage.fromFilePath(this, uri)
                 TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
@@ -209,10 +208,12 @@ class MainActivity : Activity() {
 
     private fun applyScan(result: Text) {
         val full = result.text
+        Prefs.saveLastScan(this, full)
         var email = Regex("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}").find(full)?.value ?: ""
         // Name guess: the tallest printed line that is not the email, a phone number, or a URL.
-        var best: String? = null
-        var bestH = 0
+        val noise = setOf("lenovo", "thinkpad", "thinkvision", "thinkstation", "yoga", "motorola", "staff", "exhibitor", "attendee", "visitor", "contractor", "guest", "sponsor", "speaker", "vendor", "press", "vip")
+        data class CL(val t: String, val r: android.graphics.Rect?)
+        val raw = mutableListOf<CL>()
         for (block in result.textBlocks) for (line in block.lines) {
             val t = line.text.trim()
             if (t.length < 3 || t.length > 40) continue
@@ -220,9 +221,27 @@ class MainActivity : Activity() {
             if (t.count { it.isDigit() } > 1) continue
             if (!t.any { it.isLetter() }) continue
             if (!t.all { it.isLetter() || it == ' ' || it == '.' || it == '-' || it == '\'' }) continue
-            val h = line.boundingBox?.height() ?: 0
-            if (h > bestH) { bestH = h; best = t }
+            if (noise.contains(t.lowercase())) continue
+            raw.add(CL(t, line.boundingBox))
         }
+        val candidates = mutableListOf<Pair<String, Int>>()
+        raw.forEach { candidates.add(it.t to (it.r?.height() ?: 0)) }
+        // Badges often stack first/last name on two same-size lines ("Patrick" over "Kea") - merge those.
+        for (a in raw) for (b in raw) {
+            if (a === b) continue
+            val ra = a.r; val rb = b.r
+            if (ra == null || rb == null) continue
+            val ha = ra.height(); val hb = rb.height()
+            if (ha == 0 || hb == 0 || Math.abs(ha - hb) > (ha * 35) / 100) continue
+            val gap = rb.top - ra.bottom
+            if (gap < -(ha / 5) || gap > (ha * 12) / 10) continue
+            if (Math.abs(ra.left - rb.left) > Math.max(ra.width(), rb.width()) * 2 / 5) continue
+            candidates.add((a.t + " " + b.t) to (rb.bottom - ra.top))
+        }
+        val maxH = candidates.maxOfOrNull { it.second } ?: 0
+        // Among lines near the biggest print, prefer a two-word line (badges print "First Last").
+        val near = candidates.filter { it.second >= (maxH * 7) / 10 }
+        var best = (near.firstOrNull { it.first.contains(' ') } ?: near.maxByOrNull { it.second })?.first
         var name = best ?: ""
         if (name.isNotEmpty() && name == name.uppercase() && name.any { it.isLetter() }) {
             name = name.lowercase().split(" ").joinToString(" ") { w ->
@@ -234,9 +253,12 @@ class MainActivity : Activity() {
         // Lenovo floor day: no printed email -> first initial + last name @lenovo.com
         if (email.isEmpty() && name.isNotEmpty()) {
             val parts = name.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
-            val firstCh = parts.first().firstOrNull { it.isLetter() }?.lowercaseChar()
-            val last = parts.last().filter { it.isLetter() }.lowercase()
-            if (firstCh != null && last.isNotEmpty()) email = "" + firstCh + last + "@lenovo.com"
+            // First initial + LAST name, only with a real first+last pair; single names stay blank for manual entry.
+            if (parts.size >= 2) {
+                val firstCh = parts.first().firstOrNull { it.isLetter() }?.lowercaseChar()
+                val last = parts.last().filter { it.isLetter() }.lowercase()
+                if (firstCh != null && last.isNotEmpty()) email = "" + firstCh + last + "@lenovo.com"
+            }
         }
         if (name.isEmpty() && email.isEmpty()) {
             Toast.makeText(this, "No text found - try a closer, flatter shot", Toast.LENGTH_SHORT).show()
@@ -244,7 +266,6 @@ class MainActivity : Activity() {
         }
         if (name.isNotEmpty()) nameInp.setText(name)
         if (email.isNotEmpty()) emailInp.setText(email)
-        Toast.makeText(this, "Scanned - check the fields, then tap ADD", Toast.LENGTH_LONG).show()
     }
 
     private fun addEntry() {

@@ -71,6 +71,8 @@ class SettingsActivity : Activity() {
         inApi.setText(Prefs.apiBase(this))
         inToken.setText(Prefs.adminToken(this))
         inWinSubject.setText(Prefs.winnerSubject(this))
+        val last = Prefs.lastScan(this)
+        findViewById<TextView>(R.id.txtLastScan).text = if (last.isBlank()) "No scans yet - snap a badge on the Info tab, then come back here to see exactly what it read." else last
         inWinBody.setText(Prefs.winnerBody(this))
 
         findViewById<TextView>(R.id.btnSave).setOnClickListener {
