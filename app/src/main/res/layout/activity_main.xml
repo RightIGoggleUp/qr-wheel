@@ -53,17 +53,13 @@
                 android:layout_weight="1"
                 android:layout_gravity="center_horizontal"
                 android:gravity="center">
-                <FrameLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_card_white"
-                    android:padding="26dp">
-                    <ImageView
-                        android:id="@+id/imgQr"
-                        android:layout_width="300dp"
-                        android:layout_height="300dp"
-                        android:contentDescription="QR code for the signup page" />
-                </FrameLayout>
+                <com.anotherpatkreation.qrwheel.QrCardView
+                    android:id="@+id/qrCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="14dp"
+                    android:layout_marginBottom="14dp"
+                    android:contentDescription="QR code for the signup page" />
             </FrameLayout>
             <TextView
                 android:id="@+id/txtQrUrl"

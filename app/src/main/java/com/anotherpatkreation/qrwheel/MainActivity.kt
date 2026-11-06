@@ -3,7 +3,6 @@ package com.anotherpatkreation.qrwheel
 import android.app.Activity
 import android.app.Dialog
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
@@ -13,8 +12,6 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.qrcode.QRCodeWriter
 import java.util.concurrent.Executors
 
 class MainActivity : Activity() {
@@ -88,17 +85,7 @@ class MainActivity : Activity() {
         val url = Prefs.signupUrl(this)
         findViewById<TextView>(R.id.txtQrUrl).text =
             url.removePrefix("https://").removePrefix("http://")
-        try {
-            val size = 720
-            val matrix = QRCodeWriter().encode(url, BarcodeFormat.QR_CODE, size, size)
-            val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565)
-            for (x in 0 until size) for (y in 0 until size) {
-                bmp.setPixel(x, y, if (matrix[x, y]) Color.BLACK else Color.WHITE)
-            }
-            findViewById<ImageView>(R.id.imgQr).setImageBitmap(bmp)
-        } catch (e: Exception) {
-            Toast.makeText(this, "Could not build QR code", Toast.LENGTH_SHORT).show()
-        }
+        findViewById<QrCardView>(R.id.qrCard).setUrl(url)
     }
 
     private fun loadEntries() {
