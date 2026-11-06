@@ -323,19 +323,30 @@ class MainActivity : Activity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQ_SCAN && resultCode == RESULT_OK) {
-            val uri = scanPhotoUri ?: return
-            val photoPath = File(cacheDir, "scans").listFiles()?.firstOrNull { uri.toString().endsWith(it.name) }
-            try {
-                val image = InputImage.fromFilePath(this, uri)
-                TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-                    .process(image)
-                    .addOnSuccessListener { applyScan(it); photoPath?.delete() }
-                    .addOnFailureListener {
-                        Toast.makeText(this, "Could not read that photo - try again", Toast.LENGTH_SHORT).show()
-                    }
-            } catch (e: Exception) {
-                Toast.makeText(this, "Could not read that photo - try again", Toast.LENGTH_SHORT).show()
+        if (requestCode == REQ_SCAN) {
+            val uri = scanPhotoUri
+            // Badge photos live in app-private cache and are deleted on EVERY
+            // exit path - success, OCR failure, load failure, and cancel - so a
+            // participant's badge image never lingers on device.
+            val photoPath = uri?.let { u ->
+                File(cacheDir, "scans").listFiles()?.firstOrNull { u.toString().endsWith(it.name) }
+            }
+            if (resultCode == RESULT_OK && uri != null) {
+                try {
+                    val image = InputImage.fromFilePath(this, uri)
+                    TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+                        .process(image)
+                        .addOnSuccessListener { applyScan(it); photoPath?.delete() }
+                        .addOnFailureListener {
+                            photoPath?.delete()
+                            Toast.makeText(this, "Could not read that photo - try again", Toast.LENGTH_SHORT).show()
+                        }
+                } catch (e: Exception) {
+                    photoPath?.delete()
+                    Toast.makeText(this, "Could not read that photo - try again", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                photoPath?.delete()
             }
         }
     }
