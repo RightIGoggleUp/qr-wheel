@@ -9,8 +9,9 @@ android {
         applicationId = "com.anotherpatkreation.qrwheel"
         minSdk = 26
         targetSdk = 34
-        versionCode = 9
-        versionName = "0.1.0-test9"
+        versionCode = 10
+        versionName = "0.1.0-test10"
+        ndk { abiFilters += listOf("arm64-v8a") }
     }
     buildTypes {
         release {
@@ -27,4 +28,5 @@ android {
 dependencies {
     implementation("com.google.zxing:core:3.5.3")
     implementation("androidx.core:core:1.13.1")
+    implementation("com.google.mlkit:text-recognition:16.0.1")
 }

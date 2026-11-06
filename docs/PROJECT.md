@@ -59,3 +59,8 @@ Dates are America/New_York.
 - Fourth survey row added (same rules as rows 1-3: per-row on/off, up to 4 buttons, blank label = hidden, multi-select, green dot indicator). Default off with blank labels.
 - Info screen compacted for the razr: title 36sp->32sp, name/email fields 64dp->56dp, option rows 56dp->52dp with 8dp margins, ADD button 64dp->56dp. Net result: slimmer than test8 even with the extra row available.
 - Export: Option 4 column in the CSV; opt4 persisted per player.
+
+## v0.1.0-test10 (2026-11-05)
+- Badge scanning: camera button above the Full name field opens the camera; on-device OCR (Google ML Kit, bundled Latin model - no network, no third-party service, no account) reads the badge.
+- Autofill: name = the tallest non-email, non-phone, non-URL printed line (badges print the name biggest); email = printed email if found, otherwise generated as first-initial + last name @lenovo.com per Patrick's spec (2026-11-05 9:00 PM). Both fields stay editable before ADD.
+- APK now arm64-v8a only (bundled OCR model); ~16MB vs ~1.8MB before. razr and all modern event phones are arm64.

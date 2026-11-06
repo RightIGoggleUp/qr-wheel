@@ -57,11 +57,19 @@
                 android:textColor="@color/text_dim"
                 android:textSize="16sp"
                 android:layout_marginTop="6dp" />
+            <ImageButton
+                android:id="@+id/btnScanBadge"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_marginTop="10dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_camera"
+                android:contentDescription="Scan a badge" />
             <EditText
                 android:id="@+id/inpName"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/bg_input_dark"
                 android:paddingStart="18dp"
                 android:paddingEnd="18dp"

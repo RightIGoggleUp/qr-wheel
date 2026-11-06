@@ -5,6 +5,13 @@ import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
+import android.provider.MediaStore
+import androidx.core.content.FileProvider
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.Text
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import java.io.File
 import android.os.Bundle
 import android.util.Patterns
 import android.view.View
@@ -41,6 +48,7 @@ class MainActivity : Activity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
         findViewById<ImageButton>(R.id.btnEditLink).setOnClickListener { showLinkDialog() }
+        findViewById<ImageButton>(R.id.btnScanBadge).setOnClickListener { launchScan() }
         findViewById<View>(R.id.tabInfo).setOnClickListener { showTab(0) }
         findViewById<View>(R.id.tabQr).setOnClickListener { showTab(1) }
         findViewById<View>(R.id.tabWheel).setOnClickListener { showTab(2) }
@@ -68,6 +76,8 @@ class MainActivity : Activity() {
     }
 
     private val optSelections = mutableMapOf<Int, MutableSet<Int>>() // row index (0-2) -> selected button indexes (multi-select)
+    private var scanPhotoUri: Uri? = null
+    private val REQ_SCAN = 41
 
     override fun onResume() {
         super.onResume()
@@ -159,6 +169,81 @@ class MainActivity : Activity() {
         }
         dialog.findViewById<TextView>(R.id.btnCancelLink).setOnClickListener { dialog.dismiss() }
         dialog.show()
+    }
+
+
+    private fun launchScan() {
+        val dir = File(cacheDir, "scans").apply { mkdirs() }
+        val photo = File(dir, "badge_" + System.currentTimeMillis() + ".jpg")
+        val uri = FileProvider.getUriForFile(this, "com.anotherpatkreation.qrwheel.fileprovider", photo)
+        scanPhotoUri = uri
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
+        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        try {
+            startActivityForResult(intent, REQ_SCAN)
+        } catch (e: Exception) {
+            Toast.makeText(this, "No camera app found", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQ_SCAN && resultCode == RESULT_OK) {
+            val uri = scanPhotoUri ?: return
+            Toast.makeText(this, "Reading badge...", Toast.LENGTH_SHORT).show()
+            try {
+                val image = InputImage.fromFilePath(this, uri)
+                TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+                    .process(image)
+                    .addOnSuccessListener { applyScan(it) }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "Could not read that photo - try again", Toast.LENGTH_SHORT).show()
+                    }
+            } catch (e: Exception) {
+                Toast.makeText(this, "Could not read that photo - try again", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun applyScan(result: Text) {
+        val full = result.text
+        var email = Regex("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}").find(full)?.value ?: ""
+        // Name guess: the tallest printed line that is not the email, a phone number, or a URL.
+        var best: String? = null
+        var bestH = 0
+        for (block in result.textBlocks) for (line in block.lines) {
+            val t = line.text.trim()
+            if (t.length < 3 || t.length > 40) continue
+            if (t.contains('@') || t.contains("http", true) || t.contains("www.", true)) continue
+            if (t.count { it.isDigit() } > 1) continue
+            if (!t.any { it.isLetter() }) continue
+            if (!t.all { it.isLetter() || it == ' ' || it == '.' || it == '-' || it == '\'' }) continue
+            val h = line.boundingBox?.height() ?: 0
+            if (h > bestH) { bestH = h; best = t }
+        }
+        var name = best ?: ""
+        if (name.isNotEmpty() && name == name.uppercase() && name.any { it.isLetter() }) {
+            name = name.lowercase().split(" ").joinToString(" ") { w ->
+                w.replaceFirstChar { c -> if (c.isLowerCase()) c.titlecase() else c.toString() }
+            }
+        }
+        val nameInp = findViewById<EditText>(R.id.inpName)
+        val emailInp = findViewById<EditText>(R.id.inpEmail)
+        // Lenovo floor day: no printed email -> first initial + last name @lenovo.com
+        if (email.isEmpty() && name.isNotEmpty()) {
+            val parts = name.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+            val firstCh = parts.first().firstOrNull { it.isLetter() }?.lowercaseChar()
+            val last = parts.last().filter { it.isLetter() }.lowercase()
+            if (firstCh != null && last.isNotEmpty()) email = "" + firstCh + last + "@lenovo.com"
+        }
+        if (name.isEmpty() && email.isEmpty()) {
+            Toast.makeText(this, "No text found - try a closer, flatter shot", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (name.isNotEmpty()) nameInp.setText(name)
+        if (email.isNotEmpty()) emailInp.setText(email)
+        Toast.makeText(this, "Scanned - check the fields, then tap ADD", Toast.LENGTH_LONG).show()
     }
 
     private fun addEntry() {
