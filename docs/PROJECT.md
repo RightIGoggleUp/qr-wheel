@@ -16,6 +16,13 @@ Dates are America/New_York.
   by the sponsor are the design of record.
 
 ## Decision log
+### 2026-11-05 - v0.1.0-test2: branded QR + fixed layouts
+- Decision: QR style = "Round" with full-width official Lenovo red box ABOVE the code (Patrick picked from mockups). Full-width band THROUGH the code tested unscannable (OpenCV + ZXing, 5 heights) - documented as a hard limit. Centered badge max scan-safe size = 34% of card width.
+- Decision: Lenovo branding only; ISG left out (no ISG logo exists - letters only, and Patrick opted to drop it entirely). Logo asset = official public corporate logo file.
+- EC level H mandatory for styled QR; recipe decode-verified with ZXing + OpenCV at full/phone sizes before shipping.
+- Layouts now fixed/no-scroll, large-and-loud per Patrick's direction.
+- Pending: on-device camera verification of the styled QR on Patrick's razr.
+
 
 | Date (2026) | Decision | Rationale |
 |---|---|---|
