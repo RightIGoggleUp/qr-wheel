@@ -91,3 +91,6 @@ Dates are America/New_York.
 
 ## v0.1.0-test14 (2026-11-05)
 - Brand spelling confirmed by Patrick: "FloorDay" ONE WORD (WhatsApp 9:32:07 PM). Info screen header now: FloorDay (40sp bold) / "by AnotherPatKreation" (14sp dim) / form subtitle. Launcher name, export subject, and header all use FloorDay.
+
+## v0.1.0-test15 (2026-11-05)
+- Launcher icon: "FloorDay" wordmark (Floor white / Day red on midnight), replacing the red-wheel glyph (Patrick: "make it say FloorDay").
