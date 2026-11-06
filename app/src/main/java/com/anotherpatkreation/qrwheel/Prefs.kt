@@ -43,9 +43,10 @@ object Prefs {
         val defaults = listOf(
             OptionRow(true, 2, listOf("IDG", "ISG", "", "")),
             OptionRow(false, 4, listOf("", "", "", "")),
+            OptionRow(false, 4, listOf("", "", "", "")),
             OptionRow(false, 4, listOf("", "", "", ""))
         )
-        return (1..3).map { r ->
+        return (1..4).map { r ->
             val d = defaults[r - 1]
             OptionRow(
                 on = p.getBoolean("opt_row_" + r + "_on", d.on),

@@ -9,8 +9,8 @@ android {
         applicationId = "com.anotherpatkreation.qrwheel"
         minSdk = 26
         targetSdk = 34
-        versionCode = 8
-        versionName = "0.1.0-test8"
+        versionCode = 9
+        versionName = "0.1.0-test9"
     }
     buildTypes {
         release {

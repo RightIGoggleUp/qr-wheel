@@ -78,7 +78,7 @@ class MainActivity : Activity() {
 
     private fun renderOptionRows() {
         val rows = Prefs.optionRows(this)
-        val containers = listOf(R.id.optRow1, R.id.optRow2, R.id.optRow3)
+        val containers = listOf(R.id.optRow1, R.id.optRow2, R.id.optRow3, R.id.optRow4)
         val density = resources.displayMetrics.density
         rows.forEachIndexed { r, row ->
             val box = findViewById<LinearLayout>(containers[r])
@@ -175,7 +175,7 @@ class MainActivity : Activity() {
             return
         }
         val rows = Prefs.optionRows(this)
-        val opts = (0..2).map { r ->
+        val opts = (0..3).map { r ->
             val sel = optSelections[r] ?: emptySet()
             if (rows.getOrNull(r)?.on == true && sel.isNotEmpty())
                 sel.sorted().mapNotNull { rows[r].labels.getOrNull(it) }.filter { it.isNotBlank() }.joinToString("; ")
@@ -307,11 +307,11 @@ class MainActivity : Activity() {
         try {
             val df = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
             val today = df.format(java.util.Date())
-            val sb = StringBuilder("Name,Email,Won,Option 1,Option 2,Option 3\n")
+            val sb = StringBuilder("Name,Email,Won,Option 1,Option 2,Option 3,Option 4\n")
             for (e in list.sortedBy { it.name.lowercase() }) {
                 fun esc(v: String) = if (v.any { it == ',' || it == '"' || it == '\n' }) "\"" + v.replace("\"", "\"\"") + "\"" else v
                 sb.append(esc(e.name)).append(',').append(esc(e.email)).append(',').append(if (e.won) "YES" else "")
-                    .append(',').append(esc(e.opt1)).append(',').append(esc(e.opt2)).append(',').append(esc(e.opt3)).append('\n')
+                    .append(',').append(esc(e.opt1)).append(',').append(esc(e.opt2)).append(',').append(esc(e.opt3)).append(',').append(esc(e.opt4)).append('\n')
             }
             sb.append("\n").append(list.size).append(if (list.size == 1) " player" else " players").append(" - exported ").append(today).append('\n')
             val dir = java.io.File(cacheDir, "exports").apply { mkdirs() }

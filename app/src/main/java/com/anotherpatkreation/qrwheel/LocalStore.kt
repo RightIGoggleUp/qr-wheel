@@ -23,18 +23,19 @@ object LocalStore {
                     won = o.optBoolean("won", false),
                     opt1 = o.optString("opt1"),
                     opt2 = o.optString("opt2"),
-                    opt3 = o.optString("opt3")
+                    opt3 = o.optString("opt3"),
+                    opt4 = o.optString("opt4")
                 ))
             }
         } catch (_: Exception) {}
         return out
     }
 
-    fun add(c: Context, name: String, email: String, opts: List<String> = listOf("", "", "")) {
+    fun add(c: Context, name: String, email: String, opts: List<String> = listOf("", "", "", "")) {
         val l = list(c)
         l.add(Entry(
             id = System.currentTimeMillis(), name = name.trim(), email = email.trim(),
-            opt1 = opts.getOrElse(0) { "" }, opt2 = opts.getOrElse(1) { "" }, opt3 = opts.getOrElse(2) { "" }
+            opt1 = opts.getOrElse(0) { "" }, opt2 = opts.getOrElse(1) { "" }, opt3 = opts.getOrElse(2) { "" }, opt4 = opts.getOrElse(3) { "" }
         ))
         save(c, l)
     }
@@ -58,7 +59,7 @@ object LocalStore {
     private fun save(c: Context, l: List<Entry>) {
         val arr = JSONArray()
         for (e in l) {
-            arr.put(JSONObject().put("id", e.id).put("name", e.name).put("email", e.email).put("won", e.won).put("opt1", e.opt1).put("opt2", e.opt2).put("opt3", e.opt3))
+            arr.put(JSONObject().put("id", e.id).put("name", e.name).put("email", e.email).put("won", e.won).put("opt1", e.opt1).put("opt2", e.opt2).put("opt3", e.opt3).put("opt4", e.opt4))
         }
         c.getSharedPreferences(FILE, 0).edit().putString(KEY, arr.toString()).apply()
     }
