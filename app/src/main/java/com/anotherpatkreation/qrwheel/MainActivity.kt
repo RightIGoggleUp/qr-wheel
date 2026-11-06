@@ -176,11 +176,15 @@ class MainActivity : Activity() {
         }
 
         val dm = resources.displayMetrics
+        val density = dm.density
+        val labelBlock = (54 * density).toInt()      // 8dp margin + 46dp label
+        val reserveTop = if (title.isBlank()) (34 * density).toInt() else (110 * density).toInt()
+        val reserveBottom = (96 * density).toInt()   // tab bar + screen padding
+        val rowH = (dm.heightPixels - reserveTop - reserveBottom) / 2
         var side = (dm.widthPixels * 0.40f).toInt()
-        val titleH = if (title.isBlank()) (dm.heightPixels * 0.03f) else (dm.heightPixels * 0.10f)
-        val maxByH = (dm.heightPixels * 0.365f).toInt()
+        val maxByH = rowH - labelBlock - (8 * density).toInt()
         if (side > maxByH) side = maxByH
-        val minSide = (96 * dm.density).toInt()
+        val minSide = (96 * density).toInt()
         if (side < minSide) side = minSide
 
         for (i in 0..3) {

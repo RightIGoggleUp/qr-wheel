@@ -118,3 +118,7 @@ Dates are America/New_York.
 - CHANGED: Tap any code (or the pencil) to edit its link + label in place - the two-tap pattern he validated.
 - REMOVED: old single Lenovo-art QrCardView (plus lenovo_logo asset and dialog_link.xml), genuinely unused after the redesign, per his cleanup rule.
 - Local-first, no backend/auth changes; BCC/email behavior untouched.
+
+## v0.1.0-test19 (Nov 6, 2026) - QR label clipping fix
+- FIX: Patrick's device screenshot (razr, ~3x density) showed the label under a code vertically clipped. Root cause: card-side math ignored density - the 46dp label block + card overflowed each grid row, and the cell clipped the label. Card side now subtracts the label block and system-bar/tab reserves in dp-correct pixels.
+- Custom background image confirmed working on his device.
