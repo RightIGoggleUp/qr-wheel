@@ -5,10 +5,18 @@ import android.content.Context
 object Prefs {
     private const val FILE = "qrwheel"
     private const val KEY_SIGNUP_URL = "signup_url"
-    private const val KEY_API_BASE = "api_base"
-    private const val KEY_ADMIN_TOKEN = "admin_token"
+    private const val KEY_ORGANIZER_EMAIL = "organizer_email"
+    private const val KEY_PARTICIPANT_SUBJECT = "participant_subject"
+    private const val KEY_PARTICIPANT_HTML = "participant_html"
     private const val KEY_WIN_SUBJECT = "winner_subject"
     private const val KEY_WIN_BODY = "winner_body"
+    const val DEFAULT_PARTICIPANT_SUBJECT = "Thank you for joining us at FloorDay"
+    const val DEFAULT_PARTICIPANT_HTML = """<h2>Thank you for joining us!</h2>
+<p>You have been entered into the giveaway.</p>
+<p>🙏 Life gives you lemons. It’s up to you how sweet your lemonade is. 🙏</p>
+<p><strong>Patrick Kea</strong><br>
+NA ISG Portfolio Enablement MGR<br>
+Lenovo</p>"""
     const val DEFAULT_WIN_SUBJECT = ""
     const val DEFAULT_WIN_BODY = "SSG Floor Day November 11th, 2026\n\n\uD83D\uDE4F ----- Life gives you lemons. It\u2019s up to you how sweet your lemonade is. -----\uD83D\uDE4F\n\nPatrick Kea\nNA ISG Portfolio Enablement MGR\n8001 Development Dr.,\nMorrisville, NC 27560\nLenovo\n+1 919 508 5001\npkea@lenovo.com\nLenovo.com/us"
     const val DEFAULT_SIGNUP_URL = "https://lenovo.highspot.com/items/6ab6621456d0d11fe3c8c144#1"
@@ -16,23 +24,33 @@ object Prefs {
     fun signupUrl(c: Context): String =
         c.getSharedPreferences(FILE, 0).getString(KEY_SIGNUP_URL, DEFAULT_SIGNUP_URL) ?: DEFAULT_SIGNUP_URL
 
-    fun apiBase(c: Context): String =
-        (c.getSharedPreferences(FILE, 0).getString(KEY_API_BASE, "") ?: "").trim().trimEnd('/')
-
-    fun adminToken(c: Context): String =
-        c.getSharedPreferences(FILE, 0).getString(KEY_ADMIN_TOKEN, "") ?: ""
-
     fun winnerSubject(c: Context): String =
         c.getSharedPreferences(FILE, 0).getString(KEY_WIN_SUBJECT, DEFAULT_WIN_SUBJECT) ?: DEFAULT_WIN_SUBJECT
 
     fun winnerBody(c: Context): String =
         c.getSharedPreferences(FILE, 0).getString(KEY_WIN_BODY, DEFAULT_WIN_BODY) ?: DEFAULT_WIN_BODY
 
-    fun save(c: Context, signupUrl: String, apiBase: String, adminToken: String) {
+    fun saveSignupUrl(c: Context, signupUrl: String) {
         c.getSharedPreferences(FILE, 0).edit()
             .putString(KEY_SIGNUP_URL, signupUrl.trim().ifBlank { DEFAULT_SIGNUP_URL })
-            .putString(KEY_API_BASE, apiBase.trim())
-            .putString(KEY_ADMIN_TOKEN, adminToken.trim())
+            .apply()
+    }
+
+    fun organizerEmail(c: Context): String =
+        c.getSharedPreferences(FILE, 0).getString(KEY_ORGANIZER_EMAIL, "") ?: ""
+
+    fun participantSubject(c: Context): String =
+        c.getSharedPreferences(FILE, 0).getString(KEY_PARTICIPANT_SUBJECT, DEFAULT_PARTICIPANT_SUBJECT) ?: DEFAULT_PARTICIPANT_SUBJECT
+
+    fun participantHtml(c: Context): String =
+        c.getSharedPreferences(FILE, 0).getString(KEY_PARTICIPANT_HTML, DEFAULT_PARTICIPANT_HTML) ?: DEFAULT_PARTICIPANT_HTML
+
+    fun saveLocalEmailSettings(c: Context, signupUrl: String, organizer: String, subject: String, html: String) {
+        c.getSharedPreferences(FILE, 0).edit()
+            .putString(KEY_SIGNUP_URL, signupUrl.trim().ifBlank { DEFAULT_SIGNUP_URL })
+            .putString(KEY_ORGANIZER_EMAIL, organizer.trim())
+            .putString(KEY_PARTICIPANT_SUBJECT, subject.trim().ifBlank { DEFAULT_PARTICIPANT_SUBJECT })
+            .putString(KEY_PARTICIPANT_HTML, html.ifBlank { DEFAULT_PARTICIPANT_HTML })
             .apply()
     }
 

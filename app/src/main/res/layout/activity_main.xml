@@ -236,14 +236,26 @@
                     android:layout_height="wrap_content" />
             </ScrollView>
             <TextView
+                android:id="@+id/btnEmailParticipants"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_button_red"
+                android:gravity="center"
+                android:text="PREPARE BCC EMAIL"
+                android:textColor="#FFFFFFFF"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
+            <TextView
                 android:id="@+id/btnExport"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
-                android:background="@drawable/bg_button_red"
+                android:background="@drawable/bg_button_dark"
                 android:gravity="center"
-                android:text="EMAIL ME THE LIST"
+                android:text="EXPORT PLAYER LIST"
                 android:textColor="#FFFFFFFF"
                 android:textSize="17sp"
                 android:textStyle="bold"

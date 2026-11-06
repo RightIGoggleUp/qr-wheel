@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Patterns
 import android.view.Gravity
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -17,8 +18,9 @@ class SettingsActivity : Activity() {
         setContentView(R.layout.activity_settings)
 
         val inSignup = findViewById<EditText>(R.id.inSignupUrl)
-        val inApi = findViewById<EditText>(R.id.inApiBase)
-        val inToken = findViewById<EditText>(R.id.inAdminToken)
+        val inOrganizerEmail = findViewById<EditText>(R.id.inOrganizerEmail)
+        val inParticipantSubject = findViewById<EditText>(R.id.inParticipantSubject)
+        val inParticipantHtml = findViewById<EditText>(R.id.inParticipantHtml)
 
         val inWinSubject = findViewById<EditText>(R.id.inWinSubject)
         val inWinBody = findViewById<EditText>(R.id.inWinBody)
@@ -68,20 +70,22 @@ class SettingsActivity : Activity() {
         }
 
         inSignup.setText(Prefs.signupUrl(this))
-        inApi.setText(Prefs.apiBase(this))
-        inToken.setText(Prefs.adminToken(this))
+        inOrganizerEmail.setText(Prefs.organizerEmail(this))
+        inParticipantSubject.setText(Prefs.participantSubject(this))
+        inParticipantHtml.setText(Prefs.participantHtml(this))
         inWinSubject.setText(Prefs.winnerSubject(this))
         val last = Prefs.lastScan(this)
         findViewById<TextView>(R.id.txtLastScan).text = if (last.isBlank()) "No scans yet - snap a badge on the Info tab, then come back here to see exactly what it read." else last
         inWinBody.setText(Prefs.winnerBody(this))
 
         findViewById<TextView>(R.id.btnSave).setOnClickListener {
-            Prefs.save(
-                this,
-                inSignup.text.toString(),
-                inApi.text.toString(),
-                inToken.text.toString()
-            )
+            val organizer = inOrganizerEmail.text.toString().trim()
+            if (organizer.isNotBlank() && !Patterns.EMAIL_ADDRESS.matcher(organizer).matches()) {
+                Toast.makeText(this, "Organizer email does not look right", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+            Prefs.saveLocalEmailSettings(this, inSignup.text.toString(), organizer,
+                inParticipantSubject.text.toString(), inParticipantHtml.text.toString())
             Prefs.saveWinnerTemplate(this, inWinSubject.text.toString(), inWinBody.text.toString())
             Prefs.saveOptionRows(this, rows.mapIndexed { r, row ->
                 row.copy(

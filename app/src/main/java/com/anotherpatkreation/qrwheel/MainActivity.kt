@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.core.content.FileProvider
+import androidx.core.text.HtmlCompat
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
@@ -22,11 +23,9 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import java.util.concurrent.Executors
 
 class MainActivity : Activity() {
 
-    private val io = Executors.newSingleThreadExecutor()
     private var entries: List<Entry> = emptyList()
     private var demo = false
     private lateinit var wheelView: WheelView
@@ -56,6 +55,7 @@ class MainActivity : Activity() {
 
         findViewById<TextView>(R.id.btnAddEntry).setOnClickListener { addEntry() }
         findViewById<TextView>(R.id.btnExport).setOnClickListener { exportPlayers() }
+        findViewById<TextView>(R.id.btnEmailParticipants).setOnClickListener { prepareBccEmail() }
 
         btnSpin.setOnClickListener {
             if (entries.isEmpty()) {
@@ -163,7 +163,7 @@ class MainActivity : Activity() {
                 Toast.makeText(this, "Enter a link first", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            Prefs.save(this, link, Prefs.apiBase(this), Prefs.adminToken(this))
+            Prefs.saveSignupUrl(this, link)
             renderQr()
             dialog.dismiss()
         }
@@ -358,48 +358,22 @@ class MainActivity : Activity() {
         dialog.findViewById<TextView>(R.id.txtWinDetails).text =
             if (w.email.isNotBlank()) w.email else "No email on file"
 
-        val notifyBtn = dialog.findViewById<TextView>(R.id.btnNotifyWinner)
-        notifyBtn.setOnClickListener {
-            notifyBtn.isEnabled = false
-            val base = Prefs.apiBase(this)
-            if (base.isEmpty()) {
-                if (w.email.isBlank()) {
-                    Toast.makeText(this, "No email on file for ${w.name}", Toast.LENGTH_LONG).show()
-                    notifyBtn.isEnabled = true
-                } else {
-                    openMailto(w)
-                    markWonAndRefresh(w)
-                    dialog.dismiss()
-                }
-            } else {
-                io.execute {
-                    try {
-                        val res = Api.notifyWinner(base, Prefs.adminToken(this), w)
-                        runOnUiThread {
-                            when {
-                                res.emailed -> {
-                                    Toast.makeText(this, "Email sent to ${w.name}", Toast.LENGTH_SHORT).show()
-                                    markWonAndRefresh(w)
-                                    dialog.dismiss()
-                                }
-                                res.reason == "not_connected" -> {
-                                    Toast.makeText(this, "Email route not connected yet - opening your mail app instead", Toast.LENGTH_LONG).show()
-                                    if (w.email.isNotBlank()) { openMailto(w); markWonAndRefresh(w); dialog.dismiss() } else notifyBtn.isEnabled = true
-                                }
-                                else -> {
-                                    Toast.makeText(this, "Could not send (${res.reason}) - try again", Toast.LENGTH_LONG).show()
-                                    notifyBtn.isEnabled = true
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        runOnUiThread {
-                            Toast.makeText(this, "Could not reach backend - try again", Toast.LENGTH_LONG).show()
-                            notifyBtn.isEnabled = true
-                        }
-                    }
-                }
+        dialog.findViewById<TextView>(R.id.btnNotifyWinner).setOnClickListener {
+            if (w.email.isBlank()) {
+                Toast.makeText(this, "No email on file for ${w.name}", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
             }
+            val subject = Prefs.winnerSubject(this).replace("{name}", w.name)
+            val body = Prefs.winnerBody(this).replace("{name}", w.name)
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "message/rfc822"
+                putExtra(Intent.EXTRA_EMAIL, arrayOf(w.email))
+                putExtra(Intent.EXTRA_SUBJECT, subject)
+                putExtra(Intent.EXTRA_TEXT, body)
+            }
+            startActivity(Intent.createChooser(intent, "Email ${w.name}"))
+            markWonAndRefresh(w)
+            dialog.dismiss()
         }
         dialog.findViewById<TextView>(R.id.btnCloseWinner).setOnClickListener { dialog.dismiss() }
         dialog.show()
@@ -444,14 +418,35 @@ class MainActivity : Activity() {
         loadLocalEntries()
     }
 
-    private fun openMailto(w: Entry) {
-        val subject = Uri.encode(Prefs.winnerSubject(this).replace("{name}", w.name))
-        val body = Uri.encode(Prefs.winnerBody(this).replace("{name}", w.name))
-        startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${w.email}?subject=$subject&body=$body")))
+    private fun prepareBccEmail() {
+        val organizer = Prefs.organizerEmail(this).trim()
+        if (organizer.isBlank()) {
+            Toast.makeText(this, "Add your organizer email in Settings first", Toast.LENGTH_LONG).show()
+            return
+        }
+        val emails = LocalStore.list(this)
+            .map { it.email.trim() }
+            .filter { it.isNotEmpty() && Patterns.EMAIL_ADDRESS.matcher(it).matches() }
+            .map { it.lowercase() }
+            .distinct()
+        if (emails.isEmpty()) {
+            Toast.makeText(this, "No valid participant emails yet", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val subject = Prefs.participantSubject(this)
+        val html = Prefs.participantHtml(this)
+        val plainText = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim()
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/html"
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(organizer))
+            putExtra(Intent.EXTRA_BCC, emails.toTypedArray())
+            putExtra(Intent.EXTRA_SUBJECT, subject)
+            putExtra(Intent.EXTRA_TEXT, plainText)
+            putExtra(Intent.EXTRA_HTML_TEXT, html)
+        }
+        startActivity(Intent.createChooser(intent, "Email participants"))
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        io.shutdown()
-    }
 }

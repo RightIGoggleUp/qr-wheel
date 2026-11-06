@@ -94,3 +94,13 @@ Dates are America/New_York.
 
 ## v0.1.0-test15 (2026-11-05)
 - Launcher icon: "FloorDay" wordmark (Floor white / Day red on midnight), replacing the red-wheel glyph (Patrick: "make it say FloorDay").
+
+## v0.1.0-test16 (Nov 5, 2026) - Local-first email, backend removed
+- DECISION: Backend email architecture removed entirely per Patrick's Nov 5 10:20 PM spec. No Cloudflare worker, no Graph, no Gmail API, no OAuth, no admin tokens. App is fully local-first.
+- Deleted: Api.kt and the whole web/ directory (worker, pages, schema, scripts).
+- NEW: PREPARE BCC EMAIL button on the Players tab. Opens the organizer's own mail app via ACTION_SEND (text/html, createChooser) with the organizer in To and every valid, deduped participant email in BCC. Never sends automatically - Patrick reviews and taps send in his mail app.
+- NEW: Settings > PARTICIPANT EMAIL section: organizer email (To), participant subject, participant HTML template, all stored locally on device. Defaults: "Thank you for joining us at FloorDay" + lemonade-quote signature block.
+- CHANGED: Winner notify on the Wheel now opens the winner email (winner subject/body templates) in the mail app too - no backend call. Mark-won and dialog behavior unchanged.
+- CHANGED: Settings no longer has API base URL or admin token fields. QR link pencil editor unchanged.
+- FIX: Settings option-rows text now reads "Up to 4 rows, 1-4 buttons each." (was "Up to 3 rows").
+- Export button restyled dark + renamed EXPORT PLAYER LIST (was red EMAIL ME THE LIST).
