@@ -173,13 +173,16 @@ class MainActivity : Activity() {
             bg.setImageDrawable(null)
         }
 
-        val dm = resources.displayMetrics
-        val density = dm.density
+        // Size from the grid's ACTUAL measured area, not guessed reserves: the
+        // old full-window math undercounted real chrome (64dp header + ~94dp
+        // title block + ~75dp tab bar + 16dp pad = ~249dp vs 206dp reserved),
+        // so card+label blocks could overflow their row bands by a few dp.
+        val density = resources.displayMetrics.density
+        val grid = findViewById<LinearLayout>(R.id.qrGrid)
+        if (grid.width == 0 || grid.height == 0) { grid.post { renderQrPage() }; return }
         val labelBlock = (54 * density).toInt()      // 8dp margin + 46dp label
-        val reserveTop = if (title.isBlank()) (34 * density).toInt() else (110 * density).toInt()
-        val reserveBottom = (96 * density).toInt()   // tab bar + screen padding
-        val rowH = (dm.heightPixels - reserveTop - reserveBottom) / 2
-        val cellW = (dm.widthPixels - 2 * (20 * density).toInt()) / 2
+        val rowH = grid.height / 2
+        val cellW = grid.width / 2
         // Biggest card that fits inside the row WITH its label: no overflow, no clipping.
         val maxCardH = rowH - labelBlock - (8 * density).toInt()
         val maxCardW = cellW - (12 * density).toInt()
