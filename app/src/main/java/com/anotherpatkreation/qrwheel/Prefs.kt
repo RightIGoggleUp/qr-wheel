@@ -7,7 +7,7 @@ object Prefs {
     private const val KEY_SIGNUP_URL = "signup_url"
     private const val KEY_API_BASE = "api_base"
     private const val KEY_ADMIN_TOKEN = "admin_token"
-    const val DEFAULT_SIGNUP_URL = "https://anotherpatkreation.com/signup"
+    const val DEFAULT_SIGNUP_URL = "https://lenovo.highspot.com/items/6ab6621456d0d11fe3c8c144#1"
 
     fun signupUrl(c: Context): String =
         c.getSharedPreferences(FILE, 0).getString(KEY_SIGNUP_URL, DEFAULT_SIGNUP_URL) ?: DEFAULT_SIGNUP_URL
