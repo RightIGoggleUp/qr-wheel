@@ -246,11 +246,8 @@ class MainActivity : Activity() {
     }
 
     private fun openMailto(w: Entry) {
-        val subject = Uri.encode("You won the prize drawing!")
-        val body = Uri.encode(
-            "Hi ${w.name}!\n\nCongratulations - you won today's prize drawing. " +
-                "Stop by our table to pick up your prize.\n\nThanks for entering!"
-        )
+        val subject = Uri.encode(Prefs.winnerSubject(this).replace("{name}", w.name))
+        val body = Uri.encode(Prefs.winnerBody(this).replace("{name}", w.name))
         startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${w.email}?subject=$subject&body=$body")))
     }
 

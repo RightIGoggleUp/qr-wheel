@@ -15,9 +15,14 @@ class SettingsActivity : Activity() {
         val inApi = findViewById<EditText>(R.id.inApiBase)
         val inToken = findViewById<EditText>(R.id.inAdminToken)
 
+        val inWinSubject = findViewById<EditText>(R.id.inWinSubject)
+        val inWinBody = findViewById<EditText>(R.id.inWinBody)
+
         inSignup.setText(Prefs.signupUrl(this))
         inApi.setText(Prefs.apiBase(this))
         inToken.setText(Prefs.adminToken(this))
+        inWinSubject.setText(Prefs.winnerSubject(this))
+        inWinBody.setText(Prefs.winnerBody(this))
 
         findViewById<TextView>(R.id.btnSave).setOnClickListener {
             Prefs.save(
@@ -26,6 +31,7 @@ class SettingsActivity : Activity() {
                 inApi.text.toString(),
                 inToken.text.toString()
             )
+            Prefs.saveWinnerTemplate(this, inWinSubject.text.toString(), inWinBody.text.toString())
             Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show()
             finish()
         }
