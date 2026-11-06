@@ -42,3 +42,10 @@ Dates are America/New_York.
 - Brevo API key for the Gmail route (sponsor)
 - Email template copy approval (placeholders in admin page for now)
 - Custom domain attach once the transfer completes
+
+## 2026-11-05 (test4 additions)
+- Winner email template: Patrick's own Outlook .msg baked in (subject blank in the file; body = "SSG Floor Day November 11th, 2026" + his lemonade quote + full Lenovo signature). `{name}` placeholder inserts the winner's first name. Editable in Settings (subject + body) - in-place, two-tap editing is his validated pattern (pencil edit on QR page: "Great job").
+- Default QR link = his Lenovo Highspot item URL; still user-changeable via pencil.
+- QR card layout: shrunk to 97% and biased upward (+22dp bottom padding on QR screen) after he reported the white card clipped at the bottom of his razr's screen.
+- Product goal recorded: Play Store release. Keep store-friendly: current targetSdk, signing compatible with Play App Signing, no unused permissions, no hardcoded environment values.
+- Four tabs now: Info (entry form only - attendee names never show on the entry screen, his privacy call), QR Code, Prize Wheel, Players (the collected list with per-row Remove). "Players" is his picked name for the list tab. Wheel still draws from the same on-device list.

@@ -104,17 +104,6 @@
                 android:textColor="@color/text_dim"
                 android:textSize="16sp"
                 android:layout_marginTop="16dp" />
-            <ScrollView
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:layout_marginTop="6dp">
-                <LinearLayout
-                    android:id="@+id/listEntries"
-                    android:orientation="vertical"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </ScrollView>
         </LinearLayout>
 
         <LinearLayout
@@ -124,7 +113,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:paddingStart="14dp"
-            android:paddingEnd="14dp">
+            android:paddingEnd="14dp"
+            android:paddingBottom="22dp">
             <com.anotherpatkreation.qrwheel.QrCardView
                 android:id="@+id/qrCard"
                 android:layout_width="match_parent"
@@ -179,6 +169,41 @@
                 android:textColor="@color/text_dim"
                 android:textSize="18sp"
                 android:layout_marginTop="12dp" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/screenPlayers"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:visibility="gone">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Players"
+                android:textColor="@color/text"
+                android:textSize="36sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/txtPlayerCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_dim"
+                android:textSize="18sp"
+                android:layout_marginTop="8dp" />
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="14dp">
+                <LinearLayout
+                    android:id="@+id/listEntries"
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </ScrollView>
         </LinearLayout>
     </FrameLayout>
 
@@ -277,6 +302,36 @@
                 android:layout_marginTop="4dp" />
             <ImageView
                 android:id="@+id/tabWheelDot"
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:src="@drawable/ic_dot"
+                android:layout_marginTop="5dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tabPlayers"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:paddingTop="12dp"
+            android:paddingBottom="14dp"
+            android:background="?android:attr/selectableItemBackground">
+            <ImageView
+                android:id="@+id/tabPlayersIcon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_players" />
+            <TextView
+                android:id="@+id/tabPlayersLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Players"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp" />
+            <ImageView
+                android:id="@+id/tabPlayersDot"
                 android:layout_width="6dp"
                 android:layout_height="6dp"
                 android:src="@drawable/ic_dot"

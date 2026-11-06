@@ -46,6 +46,7 @@ class MainActivity : Activity() {
         findViewById<View>(R.id.tabInfo).setOnClickListener { showTab(0) }
         findViewById<View>(R.id.tabQr).setOnClickListener { showTab(1) }
         findViewById<View>(R.id.tabWheel).setOnClickListener { showTab(2) }
+        findViewById<View>(R.id.tabPlayers).setOnClickListener { showTab(3) }
 
         findViewById<TextView>(R.id.btnAddEntry).setOnClickListener { addEntry() }
 
@@ -77,11 +78,13 @@ class MainActivity : Activity() {
         findViewById<View>(R.id.screenInfo).visibility = if (tab == 0) View.VISIBLE else View.GONE
         findViewById<View>(R.id.screenQr).visibility = if (tab == 1) View.VISIBLE else View.GONE
         findViewById<View>(R.id.screenWheel).visibility = if (tab == 2) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.screenPlayers).visibility = if (tab == 3) View.VISIBLE else View.GONE
         findViewById<View>(R.id.btnEditLink).visibility = if (tab == 1) View.VISIBLE else View.GONE
         styleTab(R.id.tabInfoIcon, R.id.tabInfoLabel, R.id.tabInfoDot, tab == 0)
         styleTab(R.id.tabQrIcon, R.id.tabQrLabel, R.id.tabQrDot, tab == 1)
         styleTab(R.id.tabWheelIcon, R.id.tabWheelLabel, R.id.tabWheelDot, tab == 2)
-        if (tab == 2) loadLocalEntries()
+        styleTab(R.id.tabPlayersIcon, R.id.tabPlayersLabel, R.id.tabPlayersDot, tab == 3)
+        if (tab == 2 || tab == 3) loadLocalEntries()
     }
 
     private fun styleTab(iconId: Int, labelId: Int, dotId: Int, active: Boolean) {
@@ -151,9 +154,10 @@ class MainActivity : Activity() {
         val n = list.size
         val label = if (n == 1) "1 name on the wheel" else "$n names on the wheel"
         txtCount.text = if (demo) "$label (demo)" else label
-        findViewById<TextView>(R.id.txtInfoCount).text =
-            if (demo) "No names yet - showing demo names on the wheel"
+        val countText = if (demo) "No names yet - showing demo names on the wheel"
             else if (n == 1) "1 name in the drawing" else "$n names in the drawing"
+        findViewById<TextView>(R.id.txtInfoCount).text = countText
+        findViewById<TextView>(R.id.txtPlayerCount).text = countText
     }
 
     private fun renderInfoList(stored: List<Entry>) {

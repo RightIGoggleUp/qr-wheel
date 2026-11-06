@@ -50,14 +50,15 @@ class QrCardView @JvmOverloads constructor(
         // Card geometry: width-limited, logo band above the code.
         val availW = width.toFloat()
         val availH = height.toFloat()
-        var cardW = availW
+        // Slight shrink + upward bias so the card never hugs or clips the tab bar.
+        var cardW = availW * 0.97f
         var cardH = cardW * (1f + 1f / 3f) + cardW * 0.18f // side + band + gaps (approx)
-        if (cardH > availH) {
-            cardW *= availH / cardH
-            cardH = availH
+        if (cardH > availH * 0.98f) {
+            cardW *= (availH * 0.98f) / cardH
+            cardH = availH * 0.98f
         }
         val left = (availW - cardW) / 2f
-        val top = (availH - cardH) / 2f
+        val top = (availH - cardH) / 2f * 0.72f
 
         val padF = cardW * 0.06f
         val sideF = cardW - 2 * padF
