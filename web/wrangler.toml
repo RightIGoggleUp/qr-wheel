@@ -1,0 +1,19 @@
+name = "qrwheel"
+compatibility_date = "2025-06-01"
+main = "worker.js"
+
+[assets]
+directory = "./public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "qrwheel"
+database_id = "REPLACE_ON_DEPLOY"
+
+# Secrets to set at deploy time (wrangler secret put ...):
+#   ADMIN_TOKEN   - bearer token for admin endpoints + the Android app
+#   BREVO_API_KEY - free-tier Brevo (brevo.com) API key for confirmation emails (optional)
+# Vars to set below or in the dashboard:
+[vars]
+SENDER_EMAIL = ""
+SENDER_NAME = "Another Pat Kreation"

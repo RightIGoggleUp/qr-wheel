@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Event Admin</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0A0A0F; color: #F5F5F7;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { font-size: 30px; font-weight: 800; }
+  h2 { font-size: 18px; font-weight: 700; margin: 34px 0 12px; }
+  .muted { color: #9B9BA6; font-size: 14px; }
+  input {
+    width: 100%; height: 50px; background: #15151D; border: 1px solid #23232E;
+    border-radius: 12px; padding: 0 14px; color: #F5F5F7; font-size: 15px; outline: none;
+  }
+  input:focus { border-color: #E5484D; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 50px; padding: 0 22px; border: none; border-radius: 25px;
+    background: #E5484D; color: #fff; font-size: 15px; font-weight: 700;
+    cursor: pointer; text-decoration: none;
+  }
+  .btn.secondary { background: #2A2A33; }
+  .row { display: flex; gap: 10px; margin-top: 10px; }
+  .row .btn { flex-shrink: 0; }
+  textarea {
+    width: 100%; min-height: 120px; background: #15151D; border: 1px solid #23232E;
+    border-radius: 12px; padding: 12px 14px; color: #F5F5F7; font-size: 14px;
+    font-family: inherit; outline: none; resize: vertical;
+  }
+  textarea:focus { border-color: #E5484D; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #1F1F28; }
+  th { color: #9B9BA6; font-weight: 600; }
+  .status { color: #22C55E; font-size: 14px; margin-top: 10px; min-height: 18px; }
+  .err { color: #E5484D; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Event Admin</h1>
+  <p class="muted">QR Wheel backend controls</p>
+
+  <h2>Admin token</h2>
+  <input id="token" type="password" placeholder="Admin token">
+  <div class="row"><button class="btn secondary" id="saveToken">Save token</button></div>
+
+  <h2>Destination link (shown after signup)</h2>
+  <input id="link" type="url" placeholder="https://anotherpatkreation.com">
+  <div class="row"><button class="btn" id="saveLink">Save link</button></div>
+  <div class="status" id="linkStatus"></div>
+
+  <h2>Signups <span class="muted" id="count"></span></h2>
+  <div class="row">
+    <button class="btn secondary" id="reload">Reload</button>
+    <a class="btn" id="csv" href="#">Download Excel list (CSV)</a>
+  </div>
+  <table>
+    <thead><tr><th>Name</th><th>Email</th><th>Sells</th><th>When (UTC)</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <h2>Confirmation email (sent on submit)</h2>
+  <p class="muted">Use {name} for their first name and {link} for your destination link.</p>
+  <input id="tplConfirmSubject" type="text" placeholder="Subject" style="margin-top:10px">
+  <textarea id="tplConfirm" style="margin-top:10px"></textarea>
+
+  <h2>Winner email (sent from the wheel)</h2>
+  <input id="tplWinnerSubject" type="text" placeholder="Subject">
+  <textarea id="tplWinner" style="margin-top:10px"></textarea>
+  <div class="row"><button class="btn" id="saveTemplates">Save templates</button></div>
+  <div class="status" id="tplStatus"></div>
+
+  <h2>Outlook connection</h2>
+  <p class="muted" id="mailStatus">Checking…</p>
+  <div class="row"><a class="btn" id="connectMail" href="#">Connect work Outlook</a></div>
+
+  <h2>Winners</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Email</th><th>Drawn (UTC)</th></tr></thead>
+    <tbody id="winners"></tbody>
+  </table>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const tokenInput = $("token");
+tokenInput.value = localStorage.getItem("adminToken") || "";
+$("saveToken").onclick = () => {
+  localStorage.setItem("adminToken", tokenInput.value.trim());
+  loadAll();
+};
+const auth = () => ({ "Authorization": "Bearer " + (localStorage.getItem("adminToken") || "") });
+
+async function loadAll() {
+  $("csv").href = "/api/entries.csv?token=" + encodeURIComponent(localStorage.getItem("adminToken") || "");
+  try {
+    const cfg = await (await fetch("/api/config")).json();
+    $("link").value = cfg.link || "";
+  } catch (_) {}
+  try {
+    const res = await fetch("/api/entries", { headers: auth() });
+    if (res.status === 401) { $("count").textContent = "(bad token)"; return; }
+    const rows = await res.json();
+    $("count").textContent = "- " + rows.length + " total";
+    $("rows").innerHTML = rows.map(r =>
+      "<tr><td>" + esc(r.name) + "</td><td>" + esc(r.email) + "</td><td>" + esc(r.sells) + "</td><td>" + esc(r.created_at) + "</td></tr>").join("");
+  } catch (_) { $("count").textContent = "(could not load)"; }
+  try {
+    const res = await fetch("/api/winners", { headers: auth() });
+    if (res.ok) {
+      const rows = await res.json();
+      $("winners").innerHTML = rows.map(r =>
+        "<tr><td>" + esc(r.name) + "</td><td>" + esc(r.email) + "</td><td>" + esc(r.drawn_at) + "</td></tr>").join("");
+    }
+  } catch (_) {}
+}
+const esc = (v) => String(v == null ? "" : v).replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
+
+$("reload").onclick = loadAll;
+$("saveLink").onclick = async () => {
+  const st = $("linkStatus");
+  st.className = "status"; st.textContent = "";
+  try {
+    const res = await fetch("/api/config", {
+      method: "POST",
+      headers: { ...auth(), "Content-Type": "application/json" },
+      body: JSON.stringify({ link: $("link").value.trim() }),
+    });
+    if (!res.ok) { st.classList.add("err"); st.textContent = "Save failed - check your token."; return; }
+    st.textContent = "Link saved.";
+  } catch (_) { st.classList.add("err"); st.textContent = "Save failed."; }
+};
+$("saveTemplates").onclick = async () => {
+  const st = $("tplStatus");
+  st.className = "status"; st.textContent = "";
+  try {
+    const res = await fetch("/api/templates", {
+      method: "POST",
+      headers: { ...auth(), "Content-Type": "application/json" },
+      body: JSON.stringify({
+        confirm: $("tplConfirm").value,
+        confirm_subject: $("tplConfirmSubject").value,
+        winner: $("tplWinner").value,
+        winner_subject: $("tplWinnerSubject").value,
+      }),
+    });
+    if (!res.ok) { st.classList.add("err"); st.textContent = "Save failed - check your token."; return; }
+    st.textContent = "Templates saved.";
+  } catch (_) { st.classList.add("err"); st.textContent = "Save failed."; }
+};
+
+async function loadTemplates() {
+  try {
+    const res = await fetch("/api/templates", { headers: auth() });
+    if (!res.ok) return;
+    const t = await res.json();
+    $("tplConfirm").value = t.confirm || "";
+    $("tplConfirmSubject").value = t.confirm_subject || "";
+    $("tplWinner").value = t.winner || "";
+    $("tplWinnerSubject").value = t.winner_subject || "";
+  } catch (_) {}
+}
+
+async function loadMailStatus() {
+  try {
+    const cfg = await (await fetch("/api/config")).json();
+    $("mailStatus").textContent = cfg.mail_connected
+      ? "Connected - emails send from the connected work Outlook account."
+      : "Not connected yet. Emails will not send until Outlook is connected.";
+  } catch (_) { $("mailStatus").textContent = "Could not check status."; }
+  $("connectMail").href = "/auth/login?token=" + encodeURIComponent(localStorage.getItem("adminToken") || "");
+}
+
+$("saveToken").addEventListener("click", () => { loadTemplates(); loadMailStatus(); });
+loadTemplates();
+loadMailStatus();
+</script>
+</body>
+</html>

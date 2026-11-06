@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/bg">
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            android:textColor="@color/text"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Signup page URL (what the QR code opens)"
+            android:textColor="@color/text"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+        <EditText
+            android:id="@+id/inSignupUrl"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_input_dark"
+            android:padding="14dp"
+            android:textColor="@color/text"
+            android:textColorHint="@color/text_dim"
+            android:hint="https://anotherpatkreation.com/signup"
+            android:inputType="textUri"
+            android:textSize="15sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Backend API base URL (leave blank for demo names)"
+            android:textColor="@color/text"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:layout_marginTop="24dp" />
+        <EditText
+            android:id="@+id/inApiBase"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_input_dark"
+            android:padding="14dp"
+            android:textColor="@color/text"
+            android:textColorHint="@color/text_dim"
+            android:hint="https://your-site.pages.dev"
+            android:inputType="textUri"
+            android:textSize="15sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Admin token"
+            android:textColor="@color/text"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:layout_marginTop="24dp" />
+        <EditText
+            android:id="@+id/inAdminToken"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_input_dark"
+            android:padding="14dp"
+            android:textColor="@color/text"
+            android:textColorHint="@color/text_dim"
+            android:hint="Admin token"
+            android:inputType="textPassword"
+            android:textSize="15sp" />
+        <TextView
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="36dp"
+            android:background="@drawable/bg_button_red"
+            android:gravity="center"
+            android:text="SAVE"
+            android:textColor="#FFFFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="With no backend set, the wheel uses demo names so you can try the spin. Once the backend is live, paste its URL and token here and the wheel fills with real signups."
+            android:textColor="@color/text_dim"
+            android:textSize="14sp"
+            android:layout_marginTop="20dp" />
+    </LinearLayout>
+</ScrollView>

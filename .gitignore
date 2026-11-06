@@ -1,0 +1,7 @@
+.gradle/
+build/
+app/build/
+local.properties
+web/.wrangler/
+web/.dev.vars
+web/node_modules/
