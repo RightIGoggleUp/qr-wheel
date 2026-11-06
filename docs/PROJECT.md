@@ -124,3 +124,6 @@ Dates are America/New_York.
 - Custom background image confirmed working on his device.
 - NEW (same release, his 10:27 AM spec): pencil now opens a QR CODE 1/2/3/4 picker (all four slots, configured or empty), then link + name editing - same pattern as the Info-page option buttons. Labels capped by real font metrics to what fits two rows under the card; render clamps to 2 lines with ellipsis as a second guard.
 - PARKED (roadmap, his 10:28 AM idea): multi-device data combine/sync for ~10 collectors at one event. Not implemented; no cloud permission. Merge-after-collection vs live sync to be decided later with privacy rules intact.
+
+## v0.1.0-test20 (Nov 6, 2026) - precise two-line label fit
+- FIX: test19's average-char label cap could still overflow two rows for wide glyphs (silent ellipsis). Replaced with an InputFilter that measures each candidate string through StaticLayout - the same line-breaking engine the label TextView uses - at the label's real cell width and with its real paint (bold 16sp, system font scale included). Input needing a third line is rejected as typed. Existing saved labels are never altered by the filter; a legacy overlong label shows an ellipsis until edited.

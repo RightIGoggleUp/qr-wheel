@@ -281,12 +281,24 @@ class MainActivity : Activity() {
         inpLink.setText(Prefs.qrSlotLink(this, i))
         inpLabel.setText(Prefs.qrSlotLabel(this, i))
         inpLink.setSelectAllOnFocus(true)
-        // Limit the label to what fits two rows under the card, using real font metrics.
-        val side = if (lastQrSidePx > 0) lastQrSidePx else (resources.displayMetrics.widthPixels * 0.40f).toInt()
+        // Limit the label to what fits its real two-row area. StaticLayout is the
+        // same line-breaking engine the label TextView uses, so wrapping rules match
+        // exactly (word boundaries, spacing). Width = the label's actual cell width;
+        // paint = bold 16sp through the same configuration, so system font scale
+        // applies to both. Input needing a third line is rejected as typed.
+        val dm2 = resources.displayMetrics
+        val cellW = (dm2.widthPixels - 2 * (20 * dm2.density).toInt()) / 2
         val probe = TextView(this).apply { textSize = 16f; setTypeface(typeface, android.graphics.Typeface.BOLD) }
-        val charW = probe.paint.measureText("n")
-        val maxChars = (2 * (side / charW)).toInt().coerceAtLeast(8)
-        inpLabel.filters = arrayOf(android.text.InputFilter.LengthFilter(maxChars))
+        val paint = probe.paint
+        fun fitsTwoLines(t: CharSequence): Boolean {
+            if (t.isEmpty()) return true
+            val layout = android.text.StaticLayout.Builder.obtain(t, 0, t.length, paint, cellW).build()
+            return layout.lineCount <= 2
+        }
+        inpLabel.filters = arrayOf(android.text.InputFilter { source, sStart, sEnd, dest, dStart, dEnd ->
+            val candidate = dest.replaceRange(dStart, dEnd, source.subSequence(sStart, sEnd).toString())
+            if (fitsTwoLines(candidate)) null else ""
+        })
         dialog.findViewById<TextView>(R.id.btnSaveSlot).setOnClickListener {
             var link = inpLink.text.toString().trim()
             if (link.isNotBlank() && !link.contains("://")) link = "https://$link"
