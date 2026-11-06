@@ -74,6 +74,9 @@
   <h2>Winner email (sent from the wheel)</h2>
   <input id="tplWinnerSubject" type="text" placeholder="Subject">
   <textarea id="tplWinner" style="margin-top:10px"></textarea>
+  <h2 style="margin-top:18px">Winner email - rich HTML version (optional)</h2>
+  <p class="muted">When this is filled, the email sends as formatted HTML (Patrick's Outlook template). The plain version above stays as the fallback. {name}, {link} and {asset_base} placeholders work here too.</p>
+  <textarea id="tplWinnerHtml" style="margin-top:10px;min-height:120px" placeholder="Paste formatted HTML, or leave blank for plain text"></textarea>
   <div class="row"><button class="btn" id="saveTemplates">Save templates</button></div>
   <div class="status" id="tplStatus"></div>
 
@@ -168,6 +171,7 @@ $("saveTemplates").onclick = async () => {
         confirm_subject: $("tplConfirmSubject").value,
         winner: $("tplWinner").value,
         winner_subject: $("tplWinnerSubject").value,
+        winner_html: $("tplWinnerHtml").value,
       }),
     });
     if (!res.ok) { st.classList.add("err"); st.textContent = "Save failed - check your token."; return; }
@@ -184,6 +188,7 @@ async function loadTemplates() {
     $("tplConfirmSubject").value = t.confirm_subject || "";
     $("tplWinner").value = t.winner || "";
     $("tplWinnerSubject").value = t.winner_subject || "";
+    $("tplWinnerHtml").value = t.winner_html || "";
   } catch (_) {}
 }
 

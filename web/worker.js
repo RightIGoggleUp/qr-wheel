@@ -65,7 +65,7 @@ async function graphAccessToken(env) {
   return data.access_token || null;
 }
 
-async function sendMsGraph(env, toEmail, toName, subject, text) {
+async function sendMsGraph(env, toEmail, toName, subject, text, html) {
   const token = await graphAccessToken(env);
   if (!token) return { sent: false, reason: "not_connected" };
   const res = await fetch("https://graph.microsoft.com/v1.0/me/sendMail", {
@@ -74,7 +74,7 @@ async function sendMsGraph(env, toEmail, toName, subject, text) {
     body: JSON.stringify({
       message: {
         subject,
-        body: { contentType: "Text", content: text },
+        body: { contentType: html ? "HTML" : "Text", content: html || text },
         toRecipients: [{ emailAddress: { address: toEmail, name: toName || "" } }],
       },
       saveToSentItems: true,
@@ -83,26 +83,28 @@ async function sendMsGraph(env, toEmail, toName, subject, text) {
   return { sent: res.status === 202, reason: res.status === 202 ? "ok" : "graph_" + res.status };
 }
 
-async function sendBrevo(env, toEmail, toName, subject, text) {
+async function sendBrevo(env, toEmail, toName, subject, text, html) {
   if (!env.BREVO_API_KEY || !env.SENDER_EMAIL) return { sent: false, reason: "not_connected" };
+  const payload = {
+    sender: { email: env.SENDER_EMAIL, name: env.SENDER_NAME || "" },
+    to: [{ email: toEmail, name: toName || "" }],
+    subject,
+    textContent: text,
+  };
+  if (html) payload.htmlContent = html;
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: { "api-key": env.BREVO_API_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      sender: { email: env.SENDER_EMAIL, name: env.SENDER_NAME || "" },
-      to: [{ email: toEmail, name: toName || "" }],
-      subject,
-      textContent: text,
-    }),
+    body: JSON.stringify(payload),
   });
   return { sent: res.ok || res.status === 201, reason: res.ok || res.status === 201 ? "ok" : "brevo_" + res.status };
 }
 
-async function sendMail(env, toEmail, toName, subject, text) {
+async function sendMail(env, toEmail, toName, subject, text, html) {
   const route = await getSetting(env, "sender_route", "ms");
-  if (route === "brevo") return sendBrevo(env, toEmail, toName, subject, text);
+  if (route === "brevo") return sendBrevo(env, toEmail, toName, subject, text, html);
   if (route === "none") return { sent: false, reason: "disabled" };
-  return sendMsGraph(env, toEmail, toName, subject, text);
+  return sendMsGraph(env, toEmail, toName, subject, text, html);
 }
 
 // ---- Router ----
@@ -166,6 +168,7 @@ export default {
         confirm_subject: await getSetting(env, "tpl_confirm_subject", DEFAULT_TPL_CONFIRM_SUBJECT),
         winner: await getSetting(env, "tpl_winner", DEFAULT_TPL_WINNER),
         winner_subject: await getSetting(env, "tpl_winner_subject", DEFAULT_TPL_WINNER_SUBJECT),
+        winner_html: await getSetting(env, "tpl_winner_html", ""),
       });
     }
 
@@ -173,7 +176,7 @@ export default {
       if (!authed(request, env)) return json({ ok: false, error: "unauthorized" }, 401);
       let body;
       try { body = await request.json(); } catch { return json({ ok: false, error: "bad_json" }, 400); }
-      for (const [k, key] of [["confirm", "tpl_confirm"], ["confirm_subject", "tpl_confirm_subject"], ["winner", "tpl_winner"], ["winner_subject", "tpl_winner_subject"]]) {
+      for (const [k, key] of [["confirm", "tpl_confirm"], ["confirm_subject", "tpl_confirm_subject"], ["winner", "tpl_winner"], ["winner_subject", "tpl_winner_subject"], ["winner_html", "tpl_winner_html"]]) {
         if (typeof body[k] === "string") await putSetting(env, key, body[k]);
       }
       return json({ ok: true });
@@ -221,8 +224,11 @@ export default {
       const link = await getSetting(env, "link");
       const tpl = await getSetting(env, "tpl_winner", DEFAULT_TPL_WINNER);
       const subject = await getSetting(env, "tpl_winner_subject", DEFAULT_TPL_WINNER_SUBJECT);
+      const tplHtml = await getSetting(env, "tpl_winner_html", "");
       const first = name.split(" ")[0] || name;
-      const mail = await sendMail(env, email, name, subject, renderTemplate(tpl, { name: first, link }));
+      const origin = new URL(request.url).origin;
+      const vars = { name: first, link, asset_base: origin };
+      const mail = await sendMail(env, email, name, subject, renderTemplate(tpl, vars), tplHtml ? renderTemplate(tplHtml, vars) : null);
       return json({ ok: true, emailed: mail.sent, reason: mail.reason });
     }
 
