@@ -40,6 +40,68 @@ function renderTemplate(tpl, vars) {
   return tpl.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
 }
 
+// ---- Gmail API (send as the owner's Gmail, first-party Google route) ----
+
+function b64url(bytes) {
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function mimeHeader(v) {
+  return /[^\x20-\x7E]/.test(v) ? "=?UTF-8?B?" + b64url(new TextEncoder().encode(v)) + "?=" : v;
+}
+
+async function googleAccessToken(env) {
+  const refresh = await getSetting(env, "google_refresh_token");
+  if (!refresh || !env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) return null;
+  const res = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: env.GOOGLE_CLIENT_ID,
+      client_secret: env.GOOGLE_CLIENT_SECRET,
+      grant_type: "refresh_token",
+      refresh_token: refresh,
+    }),
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.access_token || null;
+}
+
+async function sendGmail(env, toEmail, toName, subject, text, html) {
+  const token = await googleAccessToken(env);
+  if (!token) return { sent: false, reason: "not_connected" };
+  const enc = new TextEncoder();
+  const boundary = "qrwheel_alt";
+  const headers = [
+    "From: " + mimeHeader(env.SENDER_NAME || "QR Wheel") + " <me>",
+    "To: " + (toName ? mimeHeader(toName) + " <" + toEmail + ">" : toEmail),
+    "Subject: " + mimeHeader(subject),
+    "MIME-Version: 1.0",
+  ];
+  let body;
+  if (html) {
+    headers.push('Content-Type: multipart/alternative; boundary="' + boundary + '"');
+    body =
+      "--" + boundary + "\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" + b64url(enc.encode(text)) +
+      "\r\n--" + boundary + "\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" + b64url(enc.encode(html)) +
+      "\r\n--" + boundary + "--";
+  } else {
+    headers.push("Content-Type: text/plain; charset=UTF-8");
+    headers.push("Content-Transfer-Encoding: base64");
+    body = b64url(enc.encode(text));
+  }
+  const raw = b64url(enc.encode(headers.join("\r\n") + "\r\n\r\n" + body));
+  const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+    body: JSON.stringify({ raw }),
+  });
+  return { sent: res.ok, reason: res.ok ? "ok" : "gmail_" + res.status };
+}
+
 // ---- Microsoft Graph (send as the owner's work Outlook) ----
 
 async function graphAccessToken(env) {
@@ -102,6 +164,7 @@ async function sendBrevo(env, toEmail, toName, subject, text, html) {
 
 async function sendMail(env, toEmail, toName, subject, text, html) {
   const route = await getSetting(env, "sender_route", "ms");
+  if (route === "gmail") return sendGmail(env, toEmail, toName, subject, text, html);
   if (route === "brevo") return sendBrevo(env, toEmail, toName, subject, text, html);
   if (route === "none") return { sent: false, reason: "disabled" };
   return sendMsGraph(env, toEmail, toName, subject, text, html);
@@ -146,7 +209,13 @@ export default {
         sender_route: await getSetting(env, "sender_route", "ms"),
         ms_connected: !!(await getSetting(env, "ms_refresh_token")),
         brevo_connected: !!env.BREVO_API_KEY,
-        mail_connected: (await getSetting(env, "sender_route", "ms")) === "brevo" ? !!env.BREVO_API_KEY : !!(await getSetting(env, "ms_refresh_token")),
+        mail_connected: await (async () => {
+          const r = await getSetting(env, "sender_route", "ms");
+          if (r === "gmail") return !!(await getSetting(env, "google_refresh_token"));
+          if (r === "brevo") return !!env.BREVO_API_KEY;
+          if (r === "none") return false;
+          return !!(await getSetting(env, "ms_refresh_token"));
+        })(),
       });
     }
 
@@ -155,7 +224,7 @@ export default {
       let body;
       try { body = await request.json(); } catch { return json({ ok: false, error: "bad_json" }, 400); }
       if (typeof body.link === "string") await putSetting(env, "link", body.link.trim());
-      if (typeof body.sender_route === "string" && ["ms", "brevo", "none"].includes(body.sender_route)) {
+      if (typeof body.sender_route === "string" && ["ms", "brevo", "gmail", "none"].includes(body.sender_route)) {
         await putSetting(env, "sender_route", body.sender_route);
       }
       return json({ ok: true });
@@ -236,6 +305,45 @@ export default {
       if (!authed(request, env)) return json({ ok: false, error: "unauthorized" }, 401);
       const { results } = await env.DB.prepare("SELECT * FROM winners ORDER BY drawn_at DESC").all();
       return json(results);
+    }
+
+    // ---- Gmail connect (OAuth) ----
+
+    if (path === "/auth/gmail/login" && request.method === "GET") {
+      if (!authed(request, env)) return json({ ok: false, error: "unauthorized" }, 401);
+      if (!env.GOOGLE_CLIENT_ID) return json({ ok: false, error: "google_not_configured" }, 500);
+      const redirect = url.origin + "/auth/gmail/callback";
+      const authUrl =
+        "https://accounts.google.com/o/oauth2/v2/auth" +
+        `?client_id=${encodeURIComponent(env.GOOGLE_CLIENT_ID)}` +
+        "&response_type=code&access_type=offline&prompt=consent" +
+        `&redirect_uri=${encodeURIComponent(redirect)}` +
+        `&scope=${encodeURIComponent("https://www.googleapis.com/auth/gmail.send")}`;
+      return Response.redirect(authUrl, 302);
+    }
+
+    if (path === "/auth/gmail/callback" && request.method === "GET") {
+      const code = url.searchParams.get("code");
+      if (!code) return new Response("Missing code", { status: 400 });
+      const redirect = url.origin + "/auth/gmail/callback";
+      const res = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          client_id: env.GOOGLE_CLIENT_ID || "",
+          client_secret: env.GOOGLE_CLIENT_SECRET || "",
+          grant_type: "authorization_code",
+          code,
+          redirect_uri: redirect,
+        }),
+      });
+      if (!res.ok) return new Response("Sign-in failed: " + (await res.text()), { status: 400 });
+      const data = await res.json();
+      if (data.refresh_token) await putSetting(env, "google_refresh_token", data.refresh_token);
+      return new Response(
+        "<html><body style='background:#0A0A0F;color:#F5F5F7;font-family:sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center'><div style='text-align:center'><h1>Gmail connected</h1><p style='color:#9B9BA6'>Winner emails will now send from anotherpatkreation@gmail.com. You can close this tab.</p></div></body></html>",
+        { headers: { "Content-Type": "text/html" } }
+      );
     }
 
     // ---- Outlook connect (OAuth) ----

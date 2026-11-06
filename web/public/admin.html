@@ -88,8 +88,12 @@
       Work Outlook (Microsoft 365) <span class="muted" id="msStatus"></span>
     </label>
     <label style="display:flex; gap:10px; align-items:center; font-weight:400; margin:0">
+      <input type="radio" name="route" value="gmail" id="routeGmail" style="width:auto; height:auto">
+      anotherpatkreation@gmail.com (Gmail direct - Google first-party) <span class="muted" id="gmailStatus"></span>
+    </label>
+    <label style="display:flex; gap:10px; align-items:center; font-weight:400; margin:0">
       <input type="radio" name="route" value="brevo" id="routeBrevo" style="width:auto; height:auto">
-      anotherpatkreation@gmail.com (free email service) <span class="muted" id="brevoStatus"></span>
+      anotherpatkreation@gmail.com (Brevo email service - unused) <span class="muted" id="brevoStatus"></span>
     </label>
     <label style="display:flex; gap:10px; align-items:center; font-weight:400; margin:0">
       <input type="radio" name="route" value="none" id="routeNone" style="width:auto; height:auto">
@@ -101,7 +105,7 @@
 
   <h2>Outlook connection</h2>
   <p class="muted" id="mailStatus">Checking…</p>
-  <div class="row"><a class="btn" id="connectMail" href="#">Connect work Outlook</a></div>
+  <div class="row"><a class="btn" id="connectGmail" href="#">Connect Gmail</a> <a class="btn secondary" id="connectMail" href="#">Connect work Outlook</a></div>
 
   <h2>Winners</h2>
   <table>
@@ -201,10 +205,11 @@ async function loadMailStatus() {
     $("msStatus").textContent = cfg.ms_connected ? "(connected)" : "(not connected)";
     $("brevoStatus").textContent = cfg.brevo_connected ? "(ready)" : "(needs API key on the server)";
     const route = cfg.sender_route || "ms";
-    const el = { ms: $("routeMs"), brevo: $("routeBrevo"), none: $("routeNone") }[route];
+    const el = { ms: $("routeMs"), brevo: $("routeBrevo"), gmail: $("routeGmail"), none: $("routeNone") }[route];
     if (el) el.checked = true;
   } catch (_) { $("mailStatus").textContent = "Could not check status."; }
   $("connectMail").href = "/auth/login?token=" + encodeURIComponent(localStorage.getItem("adminToken") || "");
+  $("connectGmail").href = "/auth/gmail/login?token=" + encodeURIComponent(localStorage.getItem("adminToken") || "");
 }
 
 $("saveRoute").onclick = async () => {
