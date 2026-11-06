@@ -270,7 +270,10 @@ class MainActivity : Activity() {
         val cellW = (dm2.widthPixels - 2 * (20 * dm2.density).toInt()) / 2
         val probe = TextView(this).apply { textSize = 16f; setTypeface(typeface, android.graphics.Typeface.BOLD) }
         val paint = probe.paint
-        val maxChars = (2 * (cellW / paint.measureText("W")).toInt()).coerceIn(8, 60)
+        // No artificial floor: at extreme font scale or very narrow cells the real
+        // capacity can be just a few characters, and the counter must never
+        // overstate it. The StaticLayout guard below enforces actual fit.
+        val maxChars = (2 * (cellW / paint.measureText("W")).toInt()).coerceIn(1, 60)
         fun fitsTwoLines(t: CharSequence): Boolean {
             if (t.isEmpty()) return true
             val layout = android.text.StaticLayout.Builder.obtain(t, 0, t.length, paint, cellW).build()
