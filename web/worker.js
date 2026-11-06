@@ -65,7 +65,7 @@ async function graphAccessToken(env) {
   return data.access_token || null;
 }
 
-async function sendMail(env, toEmail, toName, subject, text) {
+async function sendMsGraph(env, toEmail, toName, subject, text) {
   const token = await graphAccessToken(env);
   if (!token) return { sent: false, reason: "not_connected" };
   const res = await fetch("https://graph.microsoft.com/v1.0/me/sendMail", {
@@ -81,6 +81,28 @@ async function sendMail(env, toEmail, toName, subject, text) {
     }),
   });
   return { sent: res.status === 202, reason: res.status === 202 ? "ok" : "graph_" + res.status };
+}
+
+async function sendBrevo(env, toEmail, toName, subject, text) {
+  if (!env.BREVO_API_KEY || !env.SENDER_EMAIL) return { sent: false, reason: "not_connected" };
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: { "api-key": env.BREVO_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sender: { email: env.SENDER_EMAIL, name: env.SENDER_NAME || "" },
+      to: [{ email: toEmail, name: toName || "" }],
+      subject,
+      textContent: text,
+    }),
+  });
+  return { sent: res.ok || res.status === 201, reason: res.ok || res.status === 201 ? "ok" : "brevo_" + res.status };
+}
+
+async function sendMail(env, toEmail, toName, subject, text) {
+  const route = await getSetting(env, "sender_route", "ms");
+  if (route === "brevo") return sendBrevo(env, toEmail, toName, subject, text);
+  if (route === "none") return { sent: false, reason: "disabled" };
+  return sendMsGraph(env, toEmail, toName, subject, text);
 }
 
 // ---- Router ----
@@ -117,14 +139,23 @@ export default {
     }
 
     if (path === "/api/config" && request.method === "GET") {
-      return json({ link: await getSetting(env, "link"), mail_connected: !!(await getSetting(env, "ms_refresh_token")) });
+      return json({
+        link: await getSetting(env, "link"),
+        sender_route: await getSetting(env, "sender_route", "ms"),
+        ms_connected: !!(await getSetting(env, "ms_refresh_token")),
+        brevo_connected: !!env.BREVO_API_KEY,
+        mail_connected: (await getSetting(env, "sender_route", "ms")) === "brevo" ? !!env.BREVO_API_KEY : !!(await getSetting(env, "ms_refresh_token")),
+      });
     }
 
     if (path === "/api/config" && request.method === "POST") {
       if (!authed(request, env)) return json({ ok: false, error: "unauthorized" }, 401);
       let body;
       try { body = await request.json(); } catch { return json({ ok: false, error: "bad_json" }, 400); }
-      await putSetting(env, "link", String(body.link || "").trim());
+      if (typeof body.link === "string") await putSetting(env, "link", body.link.trim());
+      if (typeof body.sender_route === "string" && ["ms", "brevo", "none"].includes(body.sender_route)) {
+        await putSetting(env, "sender_route", body.sender_route);
+      }
       return json({ ok: true });
     }
 
