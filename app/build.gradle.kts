@@ -9,8 +9,8 @@ android {
         applicationId = "com.anotherpatkreation.qrwheel"
         minSdk = 26
         targetSdk = 34
-        versionCode = 5
-        versionName = "0.1.0-test5"
+        versionCode = 6
+        versionName = "0.1.0-test6"
     }
     buildTypes {
         release {
@@ -26,4 +26,5 @@ android {
 }
 dependencies {
     implementation("com.google.zxing:core:3.5.3")
+    implementation("androidx.core:core:1.13.1")
 }

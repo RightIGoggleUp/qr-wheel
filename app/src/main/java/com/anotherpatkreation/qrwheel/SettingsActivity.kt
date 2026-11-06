@@ -37,8 +37,15 @@ class SettingsActivity : Activity() {
         }
 
         findViewById<TextView>(R.id.btnNewGame).setOnClickListener {
-            LocalStore.resetWon(this)
-            Toast.makeText(this, "New game - everyone is back on the wheel", Toast.LENGTH_LONG).show()
+            android.app.AlertDialog.Builder(this)
+                .setTitle("Start a new game?")
+                .setMessage("This erases every player from the drawing - a fresh slate. It cannot be undone.")
+                .setPositiveButton("NEW GAME") { _, _ ->
+                    LocalStore.clearAll(this)
+                    Toast.makeText(this, "Fresh slate - all players cleared", Toast.LENGTH_LONG).show()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
         }
     }
 }

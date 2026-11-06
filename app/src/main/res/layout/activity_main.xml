@@ -97,13 +97,6 @@
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:letterSpacing="0.05" />
-            <TextView
-                android:id="@+id/txtInfoCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/text_dim"
-                android:textSize="16sp"
-                android:layout_marginTop="16dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -162,13 +155,7 @@
                 android:textSize="21sp"
                 android:textStyle="bold"
                 android:letterSpacing="0.05" />
-            <TextView
-                android:id="@+id/txtCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/text_dim"
-                android:textSize="18sp"
-                android:layout_marginTop="12dp" />
+
         </LinearLayout>
         <LinearLayout
             android:id="@+id/screenPlayers"
@@ -204,6 +191,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
             </ScrollView>
+            <TextView
+                android:id="@+id/btnExport"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/bg_button_red"
+                android:gravity="center"
+                android:text="EMAIL ME THE LIST"
+                android:textColor="#FFFFFFFF"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
         </LinearLayout>
     </FrameLayout>
 

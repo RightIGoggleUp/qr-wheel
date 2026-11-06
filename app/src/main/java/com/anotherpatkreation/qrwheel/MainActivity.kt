@@ -23,7 +23,6 @@ class MainActivity : Activity() {
     private var entries: List<Entry> = emptyList()
     private var demo = false
     private lateinit var wheelView: WheelView
-    private lateinit var txtCount: TextView
     private lateinit var btnSpin: TextView
 
     private val demoEntries = listOf(
@@ -36,7 +35,6 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main)
 
         wheelView = findViewById(R.id.wheelView)
-        txtCount = findViewById(R.id.txtCount)
         btnSpin = findViewById(R.id.btnSpin)
 
         findViewById<ImageButton>(R.id.btnSettings).setOnClickListener {
@@ -49,6 +47,7 @@ class MainActivity : Activity() {
         findViewById<View>(R.id.tabPlayers).setOnClickListener { showTab(3) }
 
         findViewById<TextView>(R.id.btnAddEntry).setOnClickListener { addEntry() }
+        findViewById<TextView>(R.id.btnExport).setOnClickListener { exportPlayers() }
 
         btnSpin.setOnClickListener {
             if (entries.isEmpty()) {
@@ -152,14 +151,9 @@ class MainActivity : Activity() {
         entries = list
         val pool = list.filter { !it.won }
         wheelView.setNames(pool.map { it.name.substringBefore(' ').ifBlank { it.name } })
-        val n = pool.size
-        val label = if (n == 1) "1 name on the wheel" else "$n names on the wheel"
-        txtCount.text = if (demo) "$label (demo)"
-            else if (n == 0) "Everyone has won - start a new game in Settings"
-            else label + if (list.size > n) " (${list.size - n} won)" else ""
-        val countText = if (demo) "No names yet - showing demo names on the wheel"
-            else if (n == 1) "1 name in the drawing" else "$n names in the drawing"
-        findViewById<TextView>(R.id.txtInfoCount).text = countText
+        val total = list.size
+        val countText = if (demo) "No players yet - add them on the Info tab"
+            else if (total == 1) "1 player in the drawing" else "$total players in the drawing"
         findViewById<TextView>(R.id.txtPlayerCount).text = countText
     }
 
@@ -177,7 +171,7 @@ class MainActivity : Activity() {
             }
             val label = TextView(this).apply {
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-                text = (if (e.email.isBlank()) e.name else "${e.name} - ${e.email}") + if (e.won) "  ·  WON" else ""
+                text = (if (e.email.isBlank()) e.name else "${e.name} - ${e.email}") + if (e.won) "  🏆" else ""
                 setTextColor(Color.parseColor("#F5F5F7"))
                 textSize = 17f
                 setPadding(0, pad, 0, pad)
@@ -252,6 +246,39 @@ class MainActivity : Activity() {
         }
         dialog.findViewById<TextView>(R.id.btnCloseWinner).setOnClickListener { dialog.dismiss() }
         dialog.show()
+    }
+
+    private fun exportPlayers() {
+        val list = LocalStore.list(this)
+        if (list.isEmpty()) {
+            Toast.makeText(this, "No players yet - add them on the Info tab", Toast.LENGTH_LONG).show()
+            return
+        }
+        try {
+            val df = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+            val today = df.format(java.util.Date())
+            val sb = StringBuilder("Name,Email,Won\n")
+            for (e in list.sortedBy { it.name.lowercase() }) {
+                fun esc(v: String) = if (v.any { it == ',' || it == '"' || it == '\n' }) "\"" + v.replace("\"", "\"\"") + "\"" else v
+                sb.append(esc(e.name)).append(',').append(esc(e.email)).append(',').append(if (e.won) "YES" else "").append('\n')
+            }
+            sb.append("\n").append(list.size).append(if (list.size == 1) " player" else " players").append(" - exported ").append(today).append('\n')
+            val dir = java.io.File(cacheDir, "exports").apply { mkdirs() }
+            val f = java.io.File(dir, "qr-wheel-players-$today.csv")
+            f.writeText(sb.toString())
+            val uri = androidx.core.content.FileProvider.getUriForFile(this, "com.anotherpatkreation.qrwheel.fileprovider", f)
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "application/vnd.ms-excel"
+                putExtra(Intent.EXTRA_EMAIL, arrayOf("anotherpatkreation@gmail.com"))
+                putExtra(Intent.EXTRA_SUBJECT, "QR Wheel players - $today")
+                putExtra(Intent.EXTRA_TEXT, "${list.size} players in the drawing, attached as a spreadsheet. Opens in Excel.")
+                putExtra(Intent.EXTRA_STREAM, uri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Export failed - " + (e.message ?: "try again"), Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun markWonAndRefresh(w: Entry) {

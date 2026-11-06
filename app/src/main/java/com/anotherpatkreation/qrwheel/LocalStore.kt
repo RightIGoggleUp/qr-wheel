@@ -41,6 +41,10 @@ object LocalStore {
         save(c, list(c).map { if (it.id == id) it.copy(won = true) else it }.toMutableList())
     }
 
+    fun clearAll(c: Context) {
+        save(c, mutableListOf())
+    }
+
     fun resetWon(c: Context) {
         save(c, list(c).map { it.copy(won = false) }.toMutableList())
     }

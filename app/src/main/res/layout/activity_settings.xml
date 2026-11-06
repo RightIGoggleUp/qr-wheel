@@ -136,7 +136,7 @@
             android:layout_marginTop="16dp"
             android:background="@drawable/bg_button_dark"
             android:gravity="center"
-            android:text="NEW GAME - PUT WINNERS BACK"
+            android:text="NEW GAME - CLEAR ALL PLAYERS"
             android:textColor="@color/text"
             android:textSize="15sp"
             android:textStyle="bold"
