@@ -130,6 +130,18 @@
             android:textStyle="bold"
             android:letterSpacing="0.05" />
         <TextView
+            android:id="@+id/btnNewGame"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_button_dark"
+            android:gravity="center"
+            android:text="NEW GAME - PUT WINNERS BACK"
+            android:textColor="@color/text"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05" />
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="The wheel spins from the names you add on the Info tab (demo names until then). The backend fields are only needed for the email-sending routes once the site is live."

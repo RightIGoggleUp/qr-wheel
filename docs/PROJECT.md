@@ -49,3 +49,4 @@ Dates are America/New_York.
 - QR card layout: shrunk to 97% and biased upward (+22dp bottom padding on QR screen) after he reported the white card clipped at the bottom of his razr's screen.
 - Product goal recorded: Play Store release. Keep store-friendly: current targetSdk, signing compatible with Play App Signing, no unused permissions, no hardcoded environment values.
 - Four tabs now: Info (entry form only - attendee names never show on the entry screen, his privacy call), QR Code, Prize Wheel, Players (the collected list with per-row Remove). "Players" is his picked name for the list tab. Wheel still draws from the same on-device list.
+- Winner rule (his): once a winner's notification goes out (email-app handoff or backend send), that name comes off the wheel until a new game. Players tab marks winners with "WON". Settings has NEW GAME - PUT WINNERS BACK to reset the pool; entries are never deleted by winning.

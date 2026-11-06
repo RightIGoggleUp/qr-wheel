@@ -35,5 +35,10 @@ class SettingsActivity : Activity() {
             Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show()
             finish()
         }
+
+        findViewById<TextView>(R.id.btnNewGame).setOnClickListener {
+            LocalStore.resetWon(this)
+            Toast.makeText(this, "New game - everyone is back on the wheel", Toast.LENGTH_LONG).show()
+        }
     }
 }

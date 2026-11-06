@@ -150,10 +150,13 @@ class MainActivity : Activity() {
 
     private fun setEntries(list: List<Entry>, demo: Boolean) {
         entries = list
-        wheelView.setNames(list.map { it.name.substringBefore(' ').ifBlank { it.name } })
-        val n = list.size
+        val pool = list.filter { !it.won }
+        wheelView.setNames(pool.map { it.name.substringBefore(' ').ifBlank { it.name } })
+        val n = pool.size
         val label = if (n == 1) "1 name on the wheel" else "$n names on the wheel"
-        txtCount.text = if (demo) "$label (demo)" else label
+        txtCount.text = if (demo) "$label (demo)"
+            else if (n == 0) "Everyone has won - start a new game in Settings"
+            else label + if (list.size > n) " (${list.size - n} won)" else ""
         val countText = if (demo) "No names yet - showing demo names on the wheel"
             else if (n == 1) "1 name in the drawing" else "$n names in the drawing"
         findViewById<TextView>(R.id.txtInfoCount).text = countText
@@ -174,7 +177,7 @@ class MainActivity : Activity() {
             }
             val label = TextView(this).apply {
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-                text = if (e.email.isBlank()) e.name else "${e.name} - ${e.email}"
+                text = (if (e.email.isBlank()) e.name else "${e.name} - ${e.email}") + if (e.won) "  ·  WON" else ""
                 setTextColor(Color.parseColor("#F5F5F7"))
                 textSize = 17f
                 setPadding(0, pad, 0, pad)
@@ -214,6 +217,7 @@ class MainActivity : Activity() {
                     notifyBtn.isEnabled = true
                 } else {
                     openMailto(w)
+                    markWonAndRefresh(w)
                     dialog.dismiss()
                 }
             } else {
@@ -224,11 +228,12 @@ class MainActivity : Activity() {
                             when {
                                 res.emailed -> {
                                     Toast.makeText(this, "Email sent to ${w.name}", Toast.LENGTH_SHORT).show()
+                                    markWonAndRefresh(w)
                                     dialog.dismiss()
                                 }
                                 res.reason == "not_connected" -> {
                                     Toast.makeText(this, "Email route not connected yet - opening your mail app instead", Toast.LENGTH_LONG).show()
-                                    if (w.email.isNotBlank()) { openMailto(w); dialog.dismiss() } else notifyBtn.isEnabled = true
+                                    if (w.email.isNotBlank()) { openMailto(w); markWonAndRefresh(w); dialog.dismiss() } else notifyBtn.isEnabled = true
                                 }
                                 else -> {
                                     Toast.makeText(this, "Could not send (${res.reason}) - try again", Toast.LENGTH_LONG).show()
@@ -247,6 +252,11 @@ class MainActivity : Activity() {
         }
         dialog.findViewById<TextView>(R.id.btnCloseWinner).setOnClickListener { dialog.dismiss() }
         dialog.show()
+    }
+
+    private fun markWonAndRefresh(w: Entry) {
+        if (w.id != 0L) LocalStore.markWon(this, w.id)
+        loadLocalEntries()
     }
 
     private fun openMailto(w: Entry) {

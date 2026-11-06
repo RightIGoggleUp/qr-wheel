@@ -19,7 +19,8 @@ object LocalStore {
                 out.add(Entry(
                     id = o.optLong("id", i.toLong()),
                     name = o.optString("name"),
-                    email = o.optString("email")
+                    email = o.optString("email"),
+                    won = o.optBoolean("won", false)
                 ))
             }
         } catch (_: Exception) {}
@@ -36,10 +37,18 @@ object LocalStore {
         save(c, list(c).filterNot { it.id == id }.toMutableList())
     }
 
+    fun markWon(c: Context, id: Long) {
+        save(c, list(c).map { if (it.id == id) it.copy(won = true) else it }.toMutableList())
+    }
+
+    fun resetWon(c: Context) {
+        save(c, list(c).map { it.copy(won = false) }.toMutableList())
+    }
+
     private fun save(c: Context, l: List<Entry>) {
         val arr = JSONArray()
         for (e in l) {
-            arr.put(JSONObject().put("id", e.id).put("name", e.name).put("email", e.email))
+            arr.put(JSONObject().put("id", e.id).put("name", e.name).put("email", e.email).put("won", e.won))
         }
         c.getSharedPreferences(FILE, 0).edit().putString(KEY, arr.toString()).apply()
     }
