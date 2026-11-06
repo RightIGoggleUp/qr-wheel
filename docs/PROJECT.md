@@ -127,3 +127,10 @@ Dates are America/New_York.
 
 ## v0.1.0-test20 (Nov 6, 2026) - precise two-line label fit
 - FIX: test19's average-char label cap could still overflow two rows for wide glyphs (silent ellipsis). Replaced with an InputFilter that measures each candidate string through StaticLayout - the same line-breaking engine the label TextView uses - at the label's real cell width and with its real paint (bold 16sp, system font scale included). Input needing a third line is rejected as typed. Existing saved labels are never altered by the filter; a legacy overlong label shows an ellipsis until edited.
+
+## v0.1.0-test21 (2026-11-06)
+- Patrick 10:36:44 AM: all four QR boxes + codes as large as possible, ALL corners rounded (screenshot showed square top corners from overflow clipping), and each link generating a custom QR "as it was in the original".
+- Restored the original custom QR art (QrCardView + Lenovo red band + round modules + red finder rings, EC level H), recovered from git history (pre-707e6d5). Each slot encodes its own saved link (Prefs.qrSlotLink(i)) - per-slot encoding verified in code.
+- Sizing math: maxCardH = rowH - labelBlock(54dp) - 8dp, maxCardW = cellW - 12dp, no min-floor (old floor caused overflow + top-corner clipping). Cards now maximize within the real content area with full two-line labels and quiet zones.
+- Patrick 10:39:00 AM: hard maximum CHARACTER LENGTH for labels, no shortening/ellipsis. maxChars = 2 x floor(cellW / width("W")) at the real bold 16sp paint (system font scale included) - worst-case-glyph guarantee that any in-cap string fits two lines. Live "n / max characters" counter under the editor field, red at the cap. StaticLayout check retained as second guard for glyphs wider than W. Legacy saved labels never rewritten; over-cap legacy label shows red counter, insertions reject until within cap.
+- Removed: bg_qr_card.xml, qrBitmap(), lastQrSidePx, stale FrameLayout import.

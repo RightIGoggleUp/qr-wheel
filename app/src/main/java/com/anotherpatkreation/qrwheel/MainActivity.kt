@@ -21,7 +21,6 @@ import android.view.View
 import android.view.Window
 import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -148,8 +147,7 @@ class MainActivity : Activity() {
     }
 
     private val qrCells = intArrayOf(R.id.qrCell1, R.id.qrCell2, R.id.qrCell3, R.id.qrCell4)
-    private val qrCards = intArrayOf(R.id.qrCard1, R.id.qrCard2, R.id.qrCard3, R.id.qrCard4)
-    private val qrImgs = intArrayOf(R.id.imgQr1, R.id.imgQr2, R.id.imgQr3, R.id.imgQr4)
+    private val qrViews = intArrayOf(R.id.qrView1, R.id.qrView2, R.id.qrView3, R.id.qrView4)
     private val qrLabels = intArrayOf(R.id.txtQrLabel1, R.id.txtQrLabel2, R.id.txtQrLabel3, R.id.txtQrLabel4)
 
     private fun renderQrPage() {
@@ -181,11 +179,10 @@ class MainActivity : Activity() {
         val reserveTop = if (title.isBlank()) (34 * density).toInt() else (110 * density).toInt()
         val reserveBottom = (96 * density).toInt()   // tab bar + screen padding
         val rowH = (dm.heightPixels - reserveTop - reserveBottom) / 2
-        var side = (dm.widthPixels * 0.40f).toInt()
-        val maxByH = rowH - labelBlock - (8 * density).toInt()
-        if (side > maxByH) side = maxByH
-        val minSide = (96 * density).toInt()
-        if (side < minSide) side = minSide
+        val cellW = (dm.widthPixels - 2 * (20 * density).toInt()) / 2
+        // Biggest card that fits inside the row WITH its label: no overflow, no clipping.
+        val maxCardH = rowH - labelBlock - (8 * density).toInt()
+        val maxCardW = cellW - (12 * density).toInt()
 
         for (i in 0..3) {
             val cell = findViewById<LinearLayout>(qrCells[i])
@@ -195,12 +192,11 @@ class MainActivity : Activity() {
                 continue
             }
             cell.visibility = View.VISIBLE
-            val card = findViewById<FrameLayout>(qrCards[i])
-            val lp = card.layoutParams
-            lp.width = side; lp.height = side
-            card.layoutParams = lp
-            lastQrSidePx = side
-            findViewById<ImageView>(qrImgs[i]).setImageBitmap(qrBitmap(link))
+            val view = findViewById<QrCardView>(qrViews[i])
+            val lp = view.layoutParams
+            lp.width = maxCardW; lp.height = maxCardH
+            view.layoutParams = lp
+            view.setUrl(link)
             val lab = findViewById<TextView>(qrLabels[i])
             val label = Prefs.qrSlotLabel(this, i)
             lab.maxLines = 2
@@ -208,26 +204,6 @@ class MainActivity : Activity() {
             lab.text = label
             lab.visibility = if (label.isBlank()) View.INVISIBLE else View.VISIBLE
             cell.setOnClickListener { showSlotDialog(i) }
-        }
-    }
-
-    private var lastQrSidePx = 0
-
-    private fun qrBitmap(content: String): Bitmap? {
-        return try {
-            val writer = com.google.zxing.qrcode.QRCodeWriter()
-            val matrix = writer.encode(content, com.google.zxing.BarcodeFormat.QR_CODE, 512, 512)
-            val bmp = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888)
-            bmp.eraseColor(Color.WHITE)
-            val ink = Color.parseColor("#111116")
-            for (x in 0 until 512) {
-                for (y in 0 until 512) {
-                    if (matrix.get(x, y)) bmp.setPixel(x, y, ink)
-                }
-            }
-            bmp
-        } catch (e: Exception) {
-            null
         }
     }
 
@@ -281,24 +257,44 @@ class MainActivity : Activity() {
         inpLink.setText(Prefs.qrSlotLink(this, i))
         inpLabel.setText(Prefs.qrSlotLabel(this, i))
         inpLink.setSelectAllOnFocus(true)
-        // Limit the label to what fits its real two-row area. StaticLayout is the
-        // same line-breaking engine the label TextView uses, so wrapping rules match
-        // exactly (word boundaries, spacing). Width = the label's actual cell width;
-        // paint = bold 16sp through the same configuration, so system font scale
-        // applies to both. Input needing a third line is rejected as typed.
+        // Hard character cap, per Patrick 10:39 AM: max chars = 2 lines x
+        // floor(cellW / width of "W"). "W" is the widest Latin glyph at the
+        // label's real bold 16sp paint (system font scale included), and cellW
+        // is the label's actual wrap width, so ANY string within the cap fits
+        // the two rows - labels are never shortened and never ellipsized.
+        // StaticLayout stays as a second guard for exotic glyphs wider than W.
+        // The cap is shown live under the field. Existing saved labels are
+        // never rewritten; an over-cap legacy label shows red in the counter
+        // and can only be shortened (insertions reject until within cap).
         val dm2 = resources.displayMetrics
         val cellW = (dm2.widthPixels - 2 * (20 * dm2.density).toInt()) / 2
         val probe = TextView(this).apply { textSize = 16f; setTypeface(typeface, android.graphics.Typeface.BOLD) }
         val paint = probe.paint
+        val maxChars = (2 * (cellW / paint.measureText("W")).toInt()).coerceIn(8, 60)
         fun fitsTwoLines(t: CharSequence): Boolean {
             if (t.isEmpty()) return true
             val layout = android.text.StaticLayout.Builder.obtain(t, 0, t.length, paint, cellW).build()
             return layout.lineCount <= 2
         }
-        inpLabel.filters = arrayOf(android.text.InputFilter { source, sStart, sEnd, dest, dStart, dEnd ->
-            val candidate = dest.replaceRange(dStart, dEnd, source.subSequence(sStart, sEnd).toString())
-            if (fitsTwoLines(candidate)) null else ""
+        inpLabel.filters = arrayOf(
+            android.text.InputFilter.LengthFilter(maxChars),
+            android.text.InputFilter { source, sStart, sEnd, dest, dStart, dEnd ->
+                val candidate = dest.replaceRange(dStart, dEnd, source.subSequence(sStart, sEnd).toString())
+                if (fitsTwoLines(candidate)) null else ""
+            }
+        )
+        val txtLimit = dialog.findViewById<TextView>(R.id.txtLabelLimit)
+        fun updateLimit() {
+            val n = inpLabel.text.length
+            txtLimit.text = "$n / $maxChars characters"
+            txtLimit.setTextColor(if (n >= maxChars) Color.parseColor("#E5484D") else Color.parseColor("#9B9BA6"))
+        }
+        inpLabel.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) { updateLimit() }
         })
+        updateLimit()
         dialog.findViewById<TextView>(R.id.btnSaveSlot).setOnClickListener {
             var link = inpLink.text.toString().trim()
             if (link.isNotBlank() && !link.contains("://")) link = "https://$link"

@@ -193,18 +193,11 @@
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="match_parent">
-                    <FrameLayout
-                        android:id="@+id/qrCard1"
+                    <com.anotherpatkreation.qrwheel.QrCardView
+                        android:id="@+id/qrView1"
                         android:layout_width="0dp"
                         android:layout_height="0dp"
-                        android:background="@drawable/bg_qr_card">
-                        <ImageView
-                            android:id="@+id/imgQr1"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_margin="10dp"
-                            android:contentDescription="QR code 1" />
-                    </FrameLayout>
+                        android:contentDescription="QR code 1" />
                     <TextView
                         android:id="@+id/txtQrLabel1"
                         android:layout_width="match_parent"
@@ -223,18 +216,11 @@
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="match_parent">
-                    <FrameLayout
-                        android:id="@+id/qrCard2"
+                    <com.anotherpatkreation.qrwheel.QrCardView
+                        android:id="@+id/qrView2"
                         android:layout_width="0dp"
                         android:layout_height="0dp"
-                        android:background="@drawable/bg_qr_card">
-                        <ImageView
-                            android:id="@+id/imgQr2"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_margin="10dp"
-                            android:contentDescription="QR code 2" />
-                    </FrameLayout>
+                        android:contentDescription="QR code 2" />
                     <TextView
                         android:id="@+id/txtQrLabel2"
                         android:layout_width="match_parent"
@@ -259,18 +245,11 @@
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="match_parent">
-                    <FrameLayout
-                        android:id="@+id/qrCard3"
+                    <com.anotherpatkreation.qrwheel.QrCardView
+                        android:id="@+id/qrView3"
                         android:layout_width="0dp"
                         android:layout_height="0dp"
-                        android:background="@drawable/bg_qr_card">
-                        <ImageView
-                            android:id="@+id/imgQr3"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_margin="10dp"
-                            android:contentDescription="QR code 3" />
-                    </FrameLayout>
+                        android:contentDescription="QR code 3" />
                     <TextView
                         android:id="@+id/txtQrLabel3"
                         android:layout_width="match_parent"
@@ -289,18 +268,11 @@
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="match_parent">
-                    <FrameLayout
-                        android:id="@+id/qrCard4"
+                    <com.anotherpatkreation.qrwheel.QrCardView
+                        android:id="@+id/qrView4"
                         android:layout_width="0dp"
                         android:layout_height="0dp"
-                        android:background="@drawable/bg_qr_card">
-                        <ImageView
-                            android:id="@+id/imgQr4"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_margin="10dp"
-                            android:contentDescription="QR code 4" />
-                    </FrameLayout>
+                        android:contentDescription="QR code 4" />
                     <TextView
                         android:id="@+id/txtQrLabel4"
                         android:layout_width="match_parent"
