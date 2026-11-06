@@ -36,6 +36,36 @@ object Prefs {
             .apply()
     }
 
+    data class OptionRow(val on: Boolean, val count: Int, val labels: List<String>)
+
+    fun optionRows(c: Context): List<OptionRow> {
+        val p = c.getSharedPreferences(FILE, 0)
+        val defaults = listOf(
+            OptionRow(true, 2, listOf("IDG", "ISG", "", "")),
+            OptionRow(false, 4, listOf("", "", "", "")),
+            OptionRow(false, 4, listOf("", "", "", ""))
+        )
+        return (1..3).map { r ->
+            val d = defaults[r - 1]
+            OptionRow(
+                on = p.getBoolean("opt_row_" + r + "_on", d.on),
+                count = p.getInt("opt_row_" + r + "_count", d.count).coerceIn(1, 4),
+                labels = (1..4).map { p.getString("opt_row_" + r + "_label_" + it, d.labels[it - 1]) ?: d.labels[it - 1] }
+            )
+        }
+    }
+
+    fun saveOptionRows(c: Context, rows: List<OptionRow>) {
+        val e = c.getSharedPreferences(FILE, 0).edit()
+        rows.forEachIndexed { i, row ->
+            val r = i + 1
+            e.putBoolean("opt_row_" + r + "_on", row.on)
+            e.putInt("opt_row_" + r + "_count", row.count.coerceIn(1, 4))
+            row.labels.forEachIndexed { j, label -> e.putString("opt_row_" + r + "_label_" + (j + 1), label.trim()) }
+        }
+        e.apply()
+    }
+
     fun saveWinnerTemplate(c: Context, subject: String, body: String) {
         c.getSharedPreferences(FILE, 0).edit()
             .putString(KEY_WIN_SUBJECT, subject)

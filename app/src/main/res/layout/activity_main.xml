@@ -85,6 +85,27 @@
                 android:textSize="19sp"
                 android:singleLine="true"
                 android:inputType="textEmailAddress" />
+            <LinearLayout
+                android:id="@+id/optRow1"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:visibility="gone" />
+            <LinearLayout
+                android:id="@+id/optRow2"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:visibility="gone" />
+            <LinearLayout
+                android:id="@+id/optRow3"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:visibility="gone" />
             <TextView
                 android:id="@+id/btnAddEntry"
                 android:layout_width="match_parent"

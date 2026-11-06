@@ -5,5 +5,8 @@ data class Entry(
     val name: String,
     val email: String = "",
     val sells: String = "",
-    val won: Boolean = false
+    val won: Boolean = false,
+    val opt1: String = "",
+    val opt2: String = "",
+    val opt3: String = ""
 )

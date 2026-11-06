@@ -67,10 +67,51 @@ class MainActivity : Activity() {
         showTab(0)
     }
 
+    private val optSelections = mutableMapOf<Int, MutableSet<Int>>() // row index (0-2) -> selected button indexes (multi-select)
+
     override fun onResume() {
         super.onResume()
         renderQr()
+        renderOptionRows()
         loadLocalEntries()
+    }
+
+    private fun renderOptionRows() {
+        val rows = Prefs.optionRows(this)
+        val containers = listOf(R.id.optRow1, R.id.optRow2, R.id.optRow3)
+        val density = resources.displayMetrics.density
+        rows.forEachIndexed { r, row ->
+            val box = findViewById<LinearLayout>(containers[r])
+            box.removeAllViews()
+            // Only labels with text become buttons; blanks stay hidden.
+            val visible = row.labels.mapIndexedNotNull { i, label -> if (label.isBlank()) null else (i to label) }
+            if (!row.on || visible.isEmpty()) { box.visibility = View.GONE; optSelections.remove(r); return@forEachIndexed }
+            box.visibility = View.VISIBLE
+            visible.forEachIndexed { pos, (i, label) ->
+                val selected = optSelections[r]?.contains(i) == true
+                val btn = TextView(this).apply {
+                    text = if (selected) {
+                        val span = android.text.SpannableString("\u23FB  " + label)
+                        span.setSpan(android.text.style.ForegroundColorSpan(Color.parseColor("#6FBA2C")), 0, 1, 0)
+                        span
+                    } else label
+                    textSize = 17f
+                    setTextColor(if (selected) Color.WHITE else Color.parseColor("#F5F5F7"))
+                    setBackgroundResource(R.drawable.bg_button_dark)
+                    gravity = android.view.Gravity.CENTER
+                    val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f)
+                    val m = (4 * density).toInt()
+                    lp.setMargins(if (pos == 0) 0 else m, 0, if (pos == visible.size - 1) 0 else m, 0)
+                    layoutParams = lp
+                    setOnClickListener {
+                        val set = optSelections.getOrPut(r) { mutableSetOf() }
+                        if (!set.remove(i)) set.add(i)
+                        renderOptionRows()
+                    }
+                }
+                box.addView(btn)
+            }
+        }
     }
 
     private fun showTab(tab: Int) {
@@ -133,9 +174,18 @@ class MainActivity : Activity() {
             Toast.makeText(this, "That email does not look right", Toast.LENGTH_SHORT).show()
             return
         }
-        LocalStore.add(this, name, email)
+        val rows = Prefs.optionRows(this)
+        val opts = (0..2).map { r ->
+            val sel = optSelections[r] ?: emptySet()
+            if (rows.getOrNull(r)?.on == true && sel.isNotEmpty())
+                sel.sorted().mapNotNull { rows[r].labels.getOrNull(it) }.filter { it.isNotBlank() }.joinToString("; ")
+            else ""
+        }
+        LocalStore.add(this, name, email, opts)
         nameInp.text.clear()
         emailInp.text.clear()
+        optSelections.clear()
+        renderOptionRows()
         nameInp.requestFocus()
         loadLocalEntries()
     }
@@ -257,10 +307,11 @@ class MainActivity : Activity() {
         try {
             val df = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
             val today = df.format(java.util.Date())
-            val sb = StringBuilder("Name,Email,Won\n")
+            val sb = StringBuilder("Name,Email,Won,Option 1,Option 2,Option 3\n")
             for (e in list.sortedBy { it.name.lowercase() }) {
                 fun esc(v: String) = if (v.any { it == ',' || it == '"' || it == '\n' }) "\"" + v.replace("\"", "\"\"") + "\"" else v
-                sb.append(esc(e.name)).append(',').append(esc(e.email)).append(',').append(if (e.won) "YES" else "").append('\n')
+                sb.append(esc(e.name)).append(',').append(esc(e.email)).append(',').append(if (e.won) "YES" else "")
+                    .append(',').append(esc(e.opt1)).append(',').append(esc(e.opt2)).append(',').append(esc(e.opt3)).append('\n')
             }
             sb.append("\n").append(list.size).append(if (list.size == 1) " player" else " players").append(" - exported ").append(today).append('\n')
             val dir = java.io.File(cacheDir, "exports").apply { mkdirs() }
