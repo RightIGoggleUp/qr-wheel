@@ -11,9 +11,11 @@ object Prefs {
     private const val KEY_WIN_SUBJECT = "winner_subject"
     private const val KEY_WIN_BODY = "winner_body"
     const val DEFAULT_PARTICIPANT_SUBJECT = "Thank you for joining us at FloorDay"
-    const val DEFAULT_PARTICIPANT_HTML = """<h2>Thank you for joining us!</h2>
-<p>You have been entered into the giveaway.</p>
-<p>🙏 Life gives you lemons. It’s up to you how sweet your lemonade is. 🙏</p>
+    const val DEFAULT_PARTICIPANT_HTML = """<h2>FloorDay Test</h2>
+<p>Thank you for joining us today!</p>
+<p><b>This sentence should be bold.</b></p>
+<p><i>This sentence should be italic.</i></p>
+<p>Visit <a href="https://www.lenovo.com/us">Lenovo.com</a></p>
 <p><strong>Patrick Kea</strong><br>
 NA ISG Portfolio Enablement MGR<br>
 Lenovo</p>"""

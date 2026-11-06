@@ -436,17 +436,17 @@ class MainActivity : Activity() {
 
         val subject = Prefs.participantSubject(this)
         val html = Prefs.participantHtml(this)
-        val plainText = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim()
+        val formatted = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)
 
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/html"
             putExtra(Intent.EXTRA_EMAIL, arrayOf(organizer))
             putExtra(Intent.EXTRA_BCC, emails.toTypedArray())
             putExtra(Intent.EXTRA_SUBJECT, subject)
-            putExtra(Intent.EXTRA_TEXT, plainText)
+            putExtra(Intent.EXTRA_TEXT, formatted)
             putExtra(Intent.EXTRA_HTML_TEXT, html)
         }
-        startActivity(Intent.createChooser(intent, "Email participants"))
+        startActivity(Intent.createChooser(intent, "Send participant email with"))
     }
 
 }

@@ -104,3 +104,8 @@ Dates are America/New_York.
 - CHANGED: Settings no longer has API base URL or admin token fields. QR link pencil editor unchanged.
 - FIX: Settings option-rows text now reads "Up to 4 rows, 1-4 buttons each." (was "Up to 3 rows").
 - Export button restyled dark + renamed EXPORT PLAYER LIST (was red EMAIL ME THE LIST).
+
+## v0.1.0-test17 (Nov 5, 2026) - BCC intent aligned to Patrick's reference code
+- CHANGED: prepareBccEmail() now matches Patrick's reference implementation verbatim: EXTRA_TEXT carries the HtmlCompat.fromHtml formatted text (not a trimmed plain string), EXTRA_HTML_TEXT carries the raw HTML, chooser title is "Send participant email with".
+- Live test feedback (Patrick, Nov 5 ~10:36 PM): BCC handoff passed in Outlook for Android (To/BCC/subject/chooser/manual send all correct - locked behavior), but the HTML body rendered blank. Fix per his spec: EXTRA_TEXT now carries the HtmlCompat.fromHtml Spanned (formatted fallback), EXTRA_HTML_TEXT carries the original HTML string unmodified. Default participant template replaced with his FloorDay Test template (bold/italic/link checks) to isolate whether Outlook or FloorDay is the limit.
+- BUILD: test17 ships as a DEBUG APK per his build requirement (same debug signing key as all prior builds - installs in place, data preserved).
