@@ -14,6 +14,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".SettingsActivity" android:exported="false" android:label="Settings" />
+        <activity android:name=".PrivacyActivity" android:exported="false" android:label="Privacy and Legal" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.anotherpatkreation.qrwheel.fileprovider"

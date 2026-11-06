@@ -191,12 +191,13 @@ class MainActivity : Activity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQ_SCAN && resultCode == RESULT_OK) {
             val uri = scanPhotoUri ?: return
+            val photoPath = File(cacheDir, "scans").listFiles()?.firstOrNull { uri.toString().endsWith(it.name) }
             Toast.makeText(this, "Reading badge...", Toast.LENGTH_SHORT).show()
             try {
                 val image = InputImage.fromFilePath(this, uri)
                 TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
                     .process(image)
-                    .addOnSuccessListener { applyScan(it) }
+                    .addOnSuccessListener { applyScan(it); photoPath?.delete() }
                     .addOnFailureListener {
                         Toast.makeText(this, "Could not read that photo - try again", Toast.LENGTH_SHORT).show()
                     }

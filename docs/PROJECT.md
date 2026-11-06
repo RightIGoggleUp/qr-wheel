@@ -74,3 +74,8 @@ Dates are America/New_York.
 
 ## v0.1.0-test11 (2026-11-05)
 - Rebrand: display name "Floor Day" (launcher + system), Excel export email subject "Floor Day players - <date>". Package id unchanged (com.anotherpatkreation.qrwheel).
+
+## v0.1.0-test12 (2026-11-05)
+- Privacy and Legal page: link at the bottom of Settings opens an in-app page (C90 pattern: in-app, no GitHub links, anotherpatkreation.com/floorday as the only pointer, contact contactme@anotherpatkreation.com).
+- Store-ready content: on-device storage, badge scan facts (no camera permission held, on-device ML Kit, one-time model download, scan photo deleted right after reading), no accounts/analytics/ads/tracking, data leaves only via user-sent emails, internet-only permission, deletion via NEW GAME/uninstall, children/changes/contact/legal sections.
+- MainActivity: each scan photo is deleted after OCR completes (was kept in cache before).
